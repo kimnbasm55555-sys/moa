@@ -100,6 +100,19 @@ body{font-family:'Pretendard',-apple-system,sans-serif;background:var(--bg);colo
 .btn-send:disabled{background:var(--surface-2);color:var(--text-muted);cursor:not-allowed}
 .hint-box{font-size:var(--fs-cap);color:var(--text-muted);background:var(--surface-2);
   padding:10px var(--sp-3);border-radius:8px;margin-bottom:var(--sp-4);line-height:1.5}
+
+/* 내 프로필 카드 (자동 연동) */
+.myprofile{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) var(--sp-4);
+  background:var(--accent-soft);border-radius:var(--radius);margin-bottom:var(--sp-4)}
+.mp-avatar{width:44px;height:44px;border-radius:50%;flex-shrink:0;object-fit:cover;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--fs-base);color:#fff;background:var(--accent)}
+.mp-info{flex:1;min-width:0}
+.mp-name{font-weight:700;font-size:var(--fs-sm)}
+.mp-career{font-size:var(--fs-xs);color:var(--text-2);margin-top:1px}
+.mp-tag{font-size:var(--fs-cap);font-weight:600;color:var(--accent);flex-shrink:0}
+.myprofile.none{background:var(--surface-2)}
+.myprofile.none .mp-avatar{background:var(--text-muted)}
+.mp-setup{font-size:var(--fs-xs);color:var(--accent);text-decoration:underline;cursor:pointer}
 </style>
 </head>
 <body data-theme="light">
@@ -128,30 +141,25 @@ body{font-family:'Pretendard',-apple-system,sans-serif;background:var(--bg);colo
   <div class="sheet">
     <h2>제안 보내기</h2>
     <div class="sh-sub" id="targetInfo">—</div>
+
+    <!-- 내 프로필 (자동 연동) -->
+    <div class="myprofile" id="myProfile">
+      <div class="mp-avatar" id="mpAvatar">?</div>
+      <div class="mp-info">
+        <div class="mp-name" id="mpName">—</div>
+        <div class="mp-career" id="mpCareer">—</div>
+      </div>
+      <span class="mp-tag">내 프로필</span>
+    </div>
+
     <div class="hint-box">💡 매출 정보는 넣지 않아요. 제공 혜택과 진심으로 승부하세요.</div>
-    <div class="field">
-      <label>이름</label>
-      <input type="text" id="repName" placeholder="예: 이현우">
-    </div>
-    <div class="field">
-      <label>브랜드 <span class="opt-label">(정식 오픈 시 승인제로 변경)</span></label>
-      <input type="text" id="repBrand" placeholder="예: 프리미엄 버거 브랜드">
-    </div>
-    <div class="field">
-      <label>경력 한 줄</label>
-      <input type="text" id="repCareer" placeholder="예: 버거 브랜드 4년차">
-    </div>
-    <div class="field">
-      <label>좌우명 <span class="opt-label">(선택 · 있으면 선택률↑)</span></label>
-      <input type="text" id="repMotto" placeholder="예: 무리한 권유는 하지 않습니다">
-    </div>
     <div class="field">
       <label>제공 혜택</label>
       <input type="text" id="offerBenefit" placeholder="예: 가맹비 500만원 할인 · 인테리어 지원">
     </div>
     <div class="field">
       <label>한마디</label>
-      <textarea id="message" placeholder="창업자에게 하고 싶은 말을 적어주세요."></textarea>
+      <textarea id="message" placeholder="이 창업자에게 하고 싶은 말을 적어주세요."></textarea>
     </div>
     <div class="sheet-actions">
       <button class="btn-cancel" id="btnCancel">취소</button>
@@ -192,6 +200,35 @@ body{font-family:'Pretendard',-apple-system,sans-serif;background:var(--bg);colo
   function arr(v){ return Array.isArray(v)?v.join(', '):(v||'—'); }
 
   let currentTarget=null;
+  let myProfile=null;   // 내 프로필 (자동 연동)
+
+  /* 내 프로필 불러오기 (가장 최근 등록된 것) */
+  async function loadMyProfile(){
+    const { data } = await sb
+      .from('rep_profiles')
+      .select('*')
+      .order('created_at',{ascending:false})
+      .limit(1);
+    if(data && data.length>0){ myProfile=data[0]; }
+    renderProfileCard();
+  }
+  function renderProfileCard(){
+    const box=$('#myProfile');
+    if(myProfile){
+      box.classList.remove('none');
+      if(myProfile.face_url){
+        $('#mpAvatar').outerHTML='<img class="mp-avatar" id="mpAvatar" src="'+myProfile.face_url+'">';
+      }else{
+        $('#mpAvatar').textContent=(myProfile.name||'?').charAt(0);
+      }
+      $('#mpName').textContent=myProfile.name+(myProfile.brand?' · '+myProfile.brand:'');
+      $('#mpCareer').textContent=(myProfile.career||'')+' '+(myProfile.career_years||'');
+    }else{
+      box.classList.add('none');
+      $('#mpName').textContent='프로필이 없어요';
+      $('#mpCareer').innerHTML='<span class="mp-setup">먼저 프로필을 등록하세요</span>';
+    }
+  }
 
   /* 조건 리스트 불러오기 */
   async function loadRequests(){
@@ -239,28 +276,30 @@ body{font-family:'Pretendard',-apple-system,sans-serif;background:var(--bg);colo
     currentTarget=id; activeBtn=btn;
     $('#targetInfo').textContent=label;
     modal.classList.add('on');
+    checkForm();
   }
   $('#btnCancel').addEventListener('click',()=>modal.classList.remove('on'));
   modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.remove('on'); });
 
-  /* 필수 입력 체크 */
-  const req=['#repName','#repBrand','#repCareer','#offerBenefit'];
+  /* 필수 입력 체크 (프로필 있어야 + 혜택 입력) */
   function checkForm(){
-    const ok=req.every(s=>$(s).value.trim());
+    const ok = !!myProfile && $('#offerBenefit').value.trim();
     $('#btnSend').disabled=!ok;
   }
-  req.forEach(s=>$(s).addEventListener('input',checkForm));
+  $('#offerBenefit').addEventListener('input',checkForm);
   $('#message').addEventListener('input',checkForm);
 
-  /* 제안 전송 */
+  /* 제안 전송 (프로필 자동 첨부) */
   $('#btnSend').addEventListener('click',async ()=>{
+    if(!myProfile){ alert('먼저 프로필을 등록해주세요.'); return; }
     $('#btnSend').disabled=true; $('#btnSend').textContent='보내는 중...';
     const { error } = await sb.from('proposals').insert([{
       request_id: currentTarget,
-      rep_name: $('#repName').value.trim(),
-      rep_brand: $('#repBrand').value.trim(),
-      rep_career: $('#repCareer').value.trim(),
-      rep_motto: $('#repMotto').value.trim(),
+      rep_code: myProfile.rep_code,
+      rep_name: myProfile.name,
+      rep_brand: myProfile.brand,
+      rep_career: (myProfile.career||'')+' '+(myProfile.career_years||''),
+      rep_motto: myProfile.motto,
       offer_benefit: $('#offerBenefit').value.trim(),
       message: $('#message').value.trim()
     }]);
@@ -272,10 +311,12 @@ body{font-family:'Pretendard',-apple-system,sans-serif;background:var(--bg);colo
     $('#btnSend').textContent='제안 보내기';
     // 버튼 완료 표시
     if(activeBtn){ activeBtn.textContent='✓ 제안 완료'; activeBtn.classList.add('done'); activeBtn.disabled=true; }
-    // 입력 초기화
-    ['#repName','#repBrand','#repCareer','#repMotto','#offerBenefit','#message'].forEach(s=>$(s).value='');
+    // 입력 초기화 (혜택·한마디만)
+    ['#offerBenefit','#message'].forEach(s=>$(s).value='');
   });
 
+  // 시작: 프로필 + 조건 동시 로드
+  loadMyProfile();
   loadRequests();
 })();
 </script>
