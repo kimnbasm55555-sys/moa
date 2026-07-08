@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모아 — 창업 조건 등록</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* =========================================================
+   모아 (가칭) — 디자인 토큰
+   방향: Mercury 톤(밝고 묵직한 신뢰감) + 다크/화이트 토글
+   색은 전부 CSS 변수로 → 테마 전환 대응
+   ========================================================= */
+:root {
+  /* 여백: 8px 단위 */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px;
+  /* 폰트 크기 단계 */
+  --fs-cap: 13px; --fs-sm: 15px; --fs-base: 17px;
+  --fs-lg: 20px; --fs-xl: 26px; --fs-2xl: 34px; --fs-3xl: 42px;
+  --radius: 16px; --radius-sm: 12px; --radius-lg: 22px;
+  --maxw: 600px;
+  --ease: cubic-bezier(.22,.61,.36,1);
+  /* Mercury 포인트: 인디고 하나만. 유일한 채도색 = 주요 액션·링크 전용 */
+  --accent: #5266eb;
+  --accent-press: #4255d4;
+}
+/* ---- 라이트 테마 (기본): Mercury 웜 크림 ---- */
+[data-theme="light"] {
+  --bg: #f6f5f2;
+  --surface: #ffffff;
+  --surface-2: #efece5;
+  --border: #e4e0d6;
+  --border-strong: #d3cdbe;
+  --text: #2a2924;
+  --text-2: #5a5548;
+  --text-3: #8a8478;
+  --shadow: 0 1px 2px rgba(42,41,36,.03), 0 6px 20px rgba(42,41,36,.05);
+  --accent-soft: #ecefff;
+}
+/* ---- 다크 테마: Mercury 인디고-블랙 ---- */
+[data-theme="dark"] {
+  --bg: #171721;
+  --surface: #1e1e2a;
+  --surface-2: #272735;
+  --border: #2c2c3a;
+  --border-strong: #3a3a4a;
+  --text: #ededf3;
+  --text-2: #a3a3b2;
+  --text-3: #6f6f80;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 32px rgba(0,0,0,.4);
+  --accent: #5c70ef;
+  --accent-soft: #232338;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.55;
+  transition: background .4s var(--ease), color .4s var(--ease);
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+/* ---------- 상단 바 ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--sp-4) var(--sp-5);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.brand { display: flex; align-items: center; gap: var(--sp-2); font-weight: 800; font-size: var(--fs-lg); letter-spacing: -.02em; }
+.brand .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.brand small { font-weight: 500; font-size: var(--fs-cap); color: var(--text-3); letter-spacing: 0; }
+.theme-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text-2); cursor: pointer; transition: all .2s var(--ease);
+}
+.theme-btn:hover { color: var(--text); border-color: var(--border-strong); }
+.theme-btn:active { transform: scale(.94); }
+
+/* ---------- 진행 바 ---------- */
+.progress-wrap { max-width: var(--maxw); margin: 0 auto; padding: var(--sp-5) var(--sp-5) 0; }
+.progress-meta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--sp-3); }
+.progress-meta .step-label { font-size: var(--fs-cap); font-weight: 600; color: var(--accent); letter-spacing: .02em; }
+.progress-meta .step-count { font-size: var(--fs-cap); color: var(--text-3); font-variant-numeric: tabular-nums; }
+.progress-track { height: 5px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 99px; width: 0%; transition: width .5s var(--ease); }
+
+/* ---------- 스텝 컨테이너 ---------- */
+.stage { max-width: var(--maxw); margin: 0 auto; padding: var(--sp-6) var(--sp-5) 140px; }
+.step { display: none; animation: fadeUp .5s var(--ease); }
+.step.active { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+.eyebrow { font-size: var(--fs-cap); font-weight: 600; color: var(--text-3); letter-spacing: .04em; text-transform: uppercase; margin-bottom: var(--sp-3); }
+.q-title { font-size: var(--fs-2xl); font-weight: 800; letter-spacing: -.03em; line-height: 1.25; margin-bottom: var(--sp-3); }
+.q-sub { font-size: var(--fs-base); color: var(--text-2); margin-bottom: var(--sp-6); }
+
+/* ---------- 선택 카드 ---------- */
+.options { display: grid; gap: var(--sp-3); }
+.opt {
+  display: flex; align-items: center; gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius); cursor: pointer;
+  transition: all .18s var(--ease); text-align: left; width: 100%;
+  color: var(--text); font-size: var(--fs-base); font-family: inherit;
+}
+.opt:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+.opt:active { transform: translateY(0); }
+.opt.selected { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 1px var(--accent) inset; }
+.opt .opt-ic { font-size: 24px; width: 32px; text-align: center; flex-shrink: 0; }
+.opt .opt-body { flex: 1; }
+.opt .opt-t { font-weight: 700; letter-spacing: -.01em; }
+.opt .opt-d { font-size: var(--fs-sm); color: var(--text-2); margin-top: 2px; }
+.opt .opt-check {
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  border: 2px solid var(--border-strong); display: flex; align-items: center; justify-content: center;
+  transition: all .18s var(--ease);
+}
+.opt.selected .opt-check { background: var(--accent); border-color: var(--accent); }
+.opt.selected .opt-check svg { opacity: 1; transform: scale(1); }
+.opt .opt-check svg { opacity: 0; transform: scale(.5); transition: all .18s var(--ease); }
+
+/* ---------- 예산 슬라이더식 선택 ---------- */
+.budget-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+@media (max-width: 420px){ .budget-grid { grid-template-columns: 1fr; } }
+
+/* ---------- 입력 필드 ---------- */
+.field { margin-bottom: var(--sp-4); }
+.field label { display: block; font-size: var(--fs-sm); font-weight: 600; color: var(--text-2); margin-bottom: var(--sp-2); }
+.field input, .field textarea, .field select {
+  width: 100%; padding: var(--sp-4); font-size: var(--fs-base); font-family: inherit;
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text); transition: border-color .18s var(--ease);
+}
+.field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--accent); }
+.field textarea { resize: vertical; min-height: 96px; line-height: 1.6; }
+.field .hint { font-size: var(--fs-cap); color: var(--text-3); margin-top: var(--sp-2); }
+
+/* region chips */
+.chips { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.chip {
+  padding: 10px var(--sp-4); border-radius: 99px; font-size: var(--fs-sm); font-weight: 600;
+  background: var(--surface); border: 1.5px solid var(--border); color: var(--text-2);
+  cursor: pointer; transition: all .16s var(--ease); font-family: inherit;
+}
+.chip:hover { border-color: var(--border-strong); color: var(--text); }
+.chip.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+[data-theme="dark"] .chip.selected { color: #06120d; }
+
+/* ---------- 하단 고정 내비 ---------- */
+.navbar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(12px); border-top: 1px solid var(--border);
+  padding: var(--sp-4) var(--sp-5); padding-bottom: max(var(--sp-4), env(safe-area-inset-bottom));
+}
+.navbar-inner { max-width: var(--maxw); margin: 0 auto; display: flex; gap: var(--sp-3); align-items: center; }
+.btn {
+  font-family: inherit; font-size: var(--fs-base); font-weight: 700; letter-spacing: -.01em;
+  border-radius: var(--radius-sm); cursor: pointer; transition: all .18s var(--ease);
+  border: 1.5px solid transparent; padding: var(--sp-4) var(--sp-5);
+}
+.btn-primary { flex: 1; background: var(--accent); color: #fff; }
+[data-theme="dark"] .btn-primary { color: #06120d; }
+.btn-primary:hover { background: var(--accent-press); }
+.btn-primary:active { transform: scale(.99); }
+.btn-primary:disabled { background: var(--surface-2); color: var(--text-3); cursor: not-allowed; }
+.btn-ghost { background: transparent; border-color: var(--border); color: var(--text-2); padding: var(--sp-4); width: 54px; display: flex; align-items: center; justify-content: center; }
+.btn-ghost:hover { border-color: var(--border-strong); color: var(--text); }
+
+/* ---------- 완료 화면 ---------- */
+.done { text-align: center; padding: var(--sp-7) 0; display: none; }
+.done.active { display: block; animation: fadeUp .5s var(--ease); }
+.done .seal {
+  width: 88px; height: 88px; border-radius: 50%; margin: 0 auto var(--sp-5);
+  background: var(--accent-soft); display: flex; align-items: center; justify-content: center;
+  animation: pop .6s var(--ease);
+}
+@keyframes pop { 0% { transform: scale(.3); opacity: 0; } 60% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
+.done h2 { font-size: var(--fs-2xl); font-weight: 800; letter-spacing: -.03em; margin-bottom: var(--sp-3); }
+.done p { font-size: var(--fs-base); color: var(--text-2); max-width: 400px; margin: 0 auto var(--sp-6); }
+.summary { text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--sp-5); max-width: 440px; margin: 0 auto var(--sp-6); }
+.summary-row { display: flex; justify-content: space-between; padding: var(--sp-3) 0; border-bottom: 1px solid var(--border); font-size: var(--fs-sm); }
+.summary-row:last-child { border-bottom: none; }
+.summary-row .k { color: var(--text-3); }
+.summary-row .v { font-weight: 600; text-align: right; }
+.trust-note { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-cap); color: var(--text-3); }
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body data-theme="light">
+
+<div class="topbar">
+  <div class="brand">
+    <span class="dot"></span> 모아 <small>가칭</small>
+  </div>
+  <button class="theme-btn" id="themeBtn" aria-label="테마 전환">
+    <svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+  </button>
+</div>
+
+<div class="progress-wrap" id="progressWrap">
+  <div class="progress-meta">
+    <span class="step-label" id="stepLabel">시작</span>
+    <span class="step-count" id="stepCount">1 / 6</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<div class="stage">
+
+  <!-- STEP 1: 창업 유형 -->
+  <div class="step active" data-step="0" data-label="창업 유형">
+    <div class="eyebrow">창업 유형</div>
+    <h1 class="q-title">지금 어떤 상황이신가요?</h1>
+    <div class="options" data-field="startupType" data-single>
+      <button class="opt" data-value="처음 창업">
+        <span class="opt-body"><span class="opt-t">처음 창업이에요</span></span>
+        <span class="opt-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+      </button>
+      <button class="opt" data-value="장사 경험 있음">
+        <span class="opt-body"><span class="opt-t">장사 경험이 있어요</span></span>
+        <span class="opt-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+      </button>
+      <button class="opt" data-value="업종 전환">
+        <span class="opt-body"><span class="opt-t">업종을 바꾸고 싶어요</span></span>
+        <span class="opt-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 2: 예산 (먼저 제시 — 핵심 필터) -->
+  <div class="step" data-step="1" data-label="예산">
+    <div class="eyebrow">예산</div>
+    <h1 class="q-title">총 예산은<br>얼마인가요?</h1>
+    <p class="q-sub">이 안에서 가능한 제안만 받아요.</p>
+    <div class="options budget-grid" data-field="budget" data-single>
+      <button class="opt" data-value="5천만 이하"><span class="opt-body"><span class="opt-t">5천만 이하</span></span><span class="opt-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button>
+      <button class="opt" data-value="5천만~1억"><span class="opt-body"><span class="opt-t">5천만 ~ 1억</span></span><span class="opt-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button>
+      <button class="opt" data-value="1억~2억"><span class="opt-body"><span class="opt-t">1억 ~ 2억</span></span><span class="opt-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button>
+      <button class="opt" data-value="2억 이상"><span class="opt-body"><span class="opt-t">2억 이상</span></span><span class="opt-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button>
+    </div>
+    <div class="field" style="margin-top:var(--sp-5)">
+      <label>자금 조달 상태 (선택)</label>
+      <div class="options" data-field="funding" data-single style="gap:var(--sp-2)">
+        <button class="opt" data-value="자기자본"><span class="opt-body"><span class="opt-t">자기자본으로 준비돼 있어요</span></span><span class="opt-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button>
+        <button class="opt" data-value="대출 예정"><span class="opt-body"><span class="opt-t">대출을 활용할 예정이에요</span></span><span class="opt-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button>
+        <button class="opt" data-value="정부지원 활용"><span class="opt-body"><span class="opt-t">정부지원을 알아보고 있어요</span></span><span class="opt-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: 관심 업종 -->
+  <div class="step" data-step="2" data-label="관심 업종">
+    <div class="eyebrow">관심 업종</div>
+    <h1 class="q-title">어떤 업종이 끌리세요?</h1>
+    <p class="q-sub">여러 개 골라도 돼요.</p>
+    <div class="chips" data-field="industry" data-multi>
+      <button class="chip" data-value="치킨">치킨</button>
+      <button class="chip" data-value="카페·디저트">카페·디저트</button>
+      <button class="chip" data-value="분식">분식</button>
+      <button class="chip" data-value="한식·백반">한식·백반</button>
+      <button class="chip" data-value="고기·구이">고기·구이</button>
+      <button class="chip" data-value="주점·술집">주점·술집</button>
+      <button class="chip" data-value="베이커리">베이커리</button>
+      <button class="chip" data-value="패스트푸드">패스트푸드</button>
+      <button class="chip" data-value="편의점">편의점</button>
+      <button class="chip" data-value="무인창업">무인창업</button>
+      <button class="chip" data-value="뷰티·헬스">뷰티·헬스</button>
+      <button class="chip chip-reco" data-value="추천받고 싶어요">✨ 추천받고 싶어요</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: 희망 지역 -->
+  <div class="step" data-step="3" data-label="희망 지역">
+    <div class="eyebrow">희망 지역</div>
+    <h1 class="q-title">어디에서 하고 싶으세요?</h1>
+    <div class="chips" data-field="region" data-multi>
+      <button class="chip" data-value="서울">서울</button>
+      <button class="chip" data-value="경기">경기</button>
+      <button class="chip" data-value="인천">인천</button>
+      <button class="chip" data-value="부산">부산</button>
+      <button class="chip" data-value="대구">대구</button>
+      <button class="chip" data-value="대전">대전</button>
+      <button class="chip" data-value="광주">광주</button>
+      <button class="chip" data-value="울산">울산</button>
+      <button class="chip" data-value="세종">세종</button>
+      <button class="chip" data-value="강원">강원</button>
+      <button class="chip" data-value="충북">충북</button>
+      <button class="chip" data-value="충남">충남</button>
+      <button class="chip" data-value="전북">전북</button>
+      <button class="chip" data-value="전남">전남</button>
+      <button class="chip" data-value="경북">경북</button>
+      <button class="chip" data-value="경남">경남</button>
+      <button class="chip" data-value="제주">제주</button>
+      <button class="chip" data-value="아직 미정">아직 미정</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: 조건부 상세 (업종전환/경험자 대상) + 자유메모 -->
+  <div class="step" data-step="4" data-label="상세 정보">
+    <div class="eyebrow">상세 · 선택</div>
+    <h1 class="q-title">조금만 더<br>알려주세요</h1>
+
+    <div id="switchFields" class="hidden">
+      <div class="field">
+        <label>지금(또는 과거) 운영 업종</label>
+        <input type="text" data-field="currentBiz" placeholder="예: 개인 카페 3년째">
+      </div>
+      <div class="field">
+        <label>전환·재창업을 생각하는 이유</label>
+        <div class="options" data-field="switchReason" data-single style="gap:var(--sp-2)">
+          <button class="opt" data-value="매출 부진"><span class="opt-body"><span class="opt-t">매출이 아쉬워서</span></span><span class="opt-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button>
+          <button class="opt" data-value="임대 만료"><span class="opt-body"><span class="opt-t">임대 만료·이전 때문에</span></span><span class="opt-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button>
+          <button class="opt" data-value="업종 싫증"><span class="opt-body"><span class="opt-t">지금 업종을 바꾸고 싶어서</span></span><span class="opt-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>희망 오픈 시기</label>
+      <div class="options" data-field="timing" data-single style="gap:var(--sp-2)">
+        <button class="opt" data-value="바로"><span class="opt-body"><span class="opt-t">바로 시작하고 싶어요</span></span><span class="opt-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button>
+        <button class="opt" data-value="3개월 내"><span class="opt-body"><span class="opt-t">3개월 안에</span></span><span class="opt-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button>
+        <button class="opt" data-value="천천히"><span class="opt-body"><span class="opt-t">좋은 게 있으면 천천히</span></span><span class="opt-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>하고 싶은 말</label>
+      <textarea data-field="memo" placeholder="막연한 생각도 괜찮아요."></textarea>
+    </div>
+  </div>
+
+  <!-- STEP 6: 이름/연락 (마지막) -->
+  <div class="step" data-step="5" data-label="거의 다 됐어요">
+    <div class="eyebrow">마지막</div>
+    <h1 class="q-title">어떻게 불러드릴까요?</h1>
+    <div class="field">
+      <label>이름 또는 닉네임</label>
+      <input type="text" data-field="name" placeholder="예: 김창업 / 파주예비사장">
+    </div>
+    <div class="field">
+      <label>연락 받을 방법</label>
+      <div class="options" data-field="contactWay" data-single style="gap:var(--sp-2)">
+        <button class="opt" data-value="앱 알림"><span class="opt-body"><span class="opt-t">앱 안에서 받을게요</span><span class="opt-d">번호 공개 없이 안전하게</span></span><span class="opt-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button>
+      </div>
+    </div>
+    <div class="trust-note" style="margin-top:var(--sp-5)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.2"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+      담당자는 모두 검증을 거쳐요.
+    </div>
+  </div>
+
+  <!-- 완료 -->
+  <div class="done" id="doneScreen">
+    <div class="seal">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+    </div>
+    <h2>등록됐어요</h2>
+    <p>검증된 담당자들이 제안을 보내드려요.</p>
+    <div class="summary" id="summary"></div>
+  </div>
+
+</div>
+
+<!-- 하단 내비 -->
+<div class="navbar" id="navbar">
+  <div class="navbar-inner">
+    <button class="btn btn-ghost" id="backBtn" aria-label="이전">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <button class="btn btn-primary" id="nextBtn" disabled>다음</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const TOTAL = 6;
+  let cur = 0;
+  const data = { startupType:"", budget:"", funding:"", industry:[], region:[],
+                 currentBiz:"", switchReason:"", timing:"", memo:"", name:"", contactWay:"" };
+
+  const $ = s => document.querySelector(s);
+  const steps = Array.from(document.querySelectorAll('.step'));
+  const fill = $('#progressFill'), stepLabel = $('#stepLabel'), stepCount = $('#stepCount');
+  const nextBtn = $('#nextBtn'), backBtn = $('#backBtn');
+  const doneScreen = $('#doneScreen'), navbar = $('#navbar'), progressWrap = $('#progressWrap');
+
+  /* ============================================================
+     Supabase 연결
+     ▼▼▼ 아래 두 값을 Supabase 프로젝트에서 복사해 붙여넣으세요 ▼▼▼
+     (Supabase → Project Settings → API 에서 확인)
+     ============================================================ */
+  const SUPABASE_URL = "https://wxecxkckbpgzcdegtahy.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_IVu4Fuyb8pKl5-ZkuYqoKA_iHKTwgpq";
+  let sb = null;
+  try {
+    if (SUPABASE_URL.startsWith("http") && window.supabase) {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+  } catch(e) { console.warn("Supabase 미연결(값 입력 전):", e); }
+
+  /* ---- 테마 토글 ---- */
+  const themeBtn = $('#themeBtn'), themeIcon = $('#themeIcon');
+  const sunIcon = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+  const moonIcon = '<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>';
+  themeBtn.addEventListener('click', ()=>{
+    const b = document.body;
+    const dark = b.getAttribute('data-theme') === 'dark';
+    b.setAttribute('data-theme', dark ? 'light' : 'dark');
+    themeIcon.innerHTML = dark ? sunIcon : moonIcon;
+  });
+
+  /* ---- 단일 선택 (카드) ---- */
+  document.querySelectorAll('[data-single]').forEach(group=>{
+    group.addEventListener('click', e=>{
+      const opt = e.target.closest('.opt'); if(!opt) return;
+      group.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+      opt.classList.add('selected');
+      data[group.dataset.field] = opt.dataset.value;
+      refresh();
+    });
+  });
+
+  /* ---- 다중 선택 (chip) ---- */
+  document.querySelectorAll('[data-multi]').forEach(group=>{
+    group.addEventListener('click', e=>{
+      const chip = e.target.closest('.chip'); if(!chip) return;
+      chip.classList.toggle('selected');
+      const field = group.dataset.field;
+      data[field] = Array.from(group.querySelectorAll('.chip.selected')).map(c=>c.dataset.value);
+      refresh();
+    });
+  });
+
+  /* ---- 텍스트 입력 ---- */
+  document.querySelectorAll('input[data-field], textarea[data-field]').forEach(inp=>{
+    inp.addEventListener('input', ()=>{ data[inp.dataset.field] = inp.value.trim(); refresh(); });
+  });
+
+  /* ---- 스텝별 필수 검증 ---- */
+  function stepValid(i){
+    switch(i){
+      case 0: return !!data.startupType;
+      case 1: return !!data.budget;
+      case 2: return data.industry.length > 0;
+      case 3: return data.region.length > 0;
+      case 4: return true;               // 상세는 선택
+      case 5: return !!data.name && !!data.contactWay;
+      default: return true;
+    }
+  }
+
+  function refresh(){
+    nextBtn.disabled = !stepValid(cur);
+    nextBtn.textContent = (cur === TOTAL - 1) ? '조건 등록하기' : '다음';
+  }
+
+  /* ---- STEP5 조건부: 업종전환/경험자면 상세 필드 노출 ---- */
+  function updateConditional(){
+    const show = data.startupType === '업종 전환' || data.startupType === '장사 경험 있음';
+    $('#switchFields').classList.toggle('hidden', !show);
+  }
+
+  function goto(i){
+    steps[cur].classList.remove('active');
+    cur = i;
+    if(cur === 4) updateConditional();
+    steps[cur].classList.add('active');
+    const pct = ((cur+1)/TOTAL)*100;
+    fill.style.width = pct + '%';
+    stepLabel.textContent = steps[cur].dataset.label;
+    stepCount.textContent = (cur+1) + ' / ' + TOTAL;
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    window.scrollTo({top:0, behavior:'smooth'});
+    refresh();
+  }
+
+  nextBtn.addEventListener('click', ()=>{
+    if(!stepValid(cur)) return;
+    if(cur < TOTAL - 1){ goto(cur+1); }
+    else { finish(); }
+  });
+  backBtn.addEventListener('click', ()=>{ if(cur>0) goto(cur-1); });
+
+  /* ---- 완료 ---- */
+  async function finish(){
+    // 1) Supabase에 저장 시도
+    if (sb) {
+      nextBtn.disabled = true;
+      nextBtn.textContent = '등록 중...';
+      const { error } = await sb.from('auction_requests').insert([{
+        startup_type: data.startupType,
+        budget: data.budget,
+        funding: data.funding,
+        industry: data.industry,
+        region: data.region,
+        current_biz: data.currentBiz,
+        switch_reason: data.switchReason,
+        timing: data.timing,
+        memo: data.memo,
+        name: data.name,
+        contact_way: data.contactWay
+      }]);
+      if (error) {
+        nextBtn.disabled = false;
+        nextBtn.textContent = '다시 시도';
+        alert('등록 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.');
+        console.error('저장 실패:', error);
+        return;
+      }
+    } else {
+      // Supabase 값 입력 전이면 콘솔에만 (개발 중)
+      console.log('제출 데이터 (Supabase 미연결):', data);
+    }
+
+    // 2) 완료 화면 표시
+    steps[cur].classList.remove('active');
+    progressWrap.style.display = 'none';
+    navbar.style.display = 'none';
+    doneScreen.classList.add('active');
+    const rows = [
+      ['창업 유형', data.startupType],
+      ['예산', data.budget],
+      ['관심 업종', data.industry.join(', ')],
+      ['희망 지역', data.region.join(', ')],
+      ['희망 시기', data.timing || '—'],
+    ];
+    $('#summary').innerHTML = rows.map(r=>
+      `<div class="summary-row"><span class="k">${r[0]}</span><span class="v">${r[1]||'—'}</span></div>`
+    ).join('');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  goto(0);
+})();
+</script>
+</body>
+</html>
