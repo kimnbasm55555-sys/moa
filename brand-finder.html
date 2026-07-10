@@ -67,6 +67,13 @@ body {
 .chip.on { background:var(--accent); border-color:var(--accent); color:#fff; }
 [data-theme="dark"] .chip.on { color:#06120d; }
 
+/* 세부 업종 칩 (대분류 하위) */
+.sub-chips { margin-top:var(--sp-3); padding-top:var(--sp-3); border-top:1px dashed var(--border); }
+.sub-chip { font-size:var(--fs-cap); padding:7px 12px; }
+.sub-chip .sub-cnt { color:var(--text-3); font-weight:500; font-size:11px; margin-left:2px; }
+.sub-chip.on .sub-cnt { color:rgba(255,255,255,.7); }
+[data-theme="dark"] .sub-chip.on .sub-cnt { color:rgba(6,18,13,.6); }
+
 /* 결과 리스트 */
 .result-head { max-width:var(--maxw); margin:0 auto; padding:var(--sp-4) var(--sp-5) var(--sp-2); display:flex; align-items:baseline; justify-content:space-between; }
 .result-head .rh-title { font-size:var(--fs-base); font-weight:700; }
@@ -169,6 +176,7 @@ body {
   <div class="filter-group">
     <div class="flabel">업종</div>
     <div class="chips" id="industryChips"></div>
+    <div class="chips sub-chips" id="subChips" style="display:none"></div>
   </div>
   <div class="filter-group">
     <div class="flabel">창업 예산</div>
@@ -226,6 +234,17 @@ body {
   const PAGE = 20;           // 한 번에 보여줄 브랜드 수
   let shown = PAGE;          // 현재 노출 개수
 
+  /* 업종 대분류 매핑 (창업자 관점 6개 그룹) */
+  const CATEGORIES = [
+    { key:'외식', label:'🍚 외식', inds:['한식','중식','일식','서양식','기타 외식','기타 외국식','패스트푸드'] },
+    { key:'카페디저트', label:'☕ 카페·디저트', inds:['커피','음료 (커피 외)','제과제빵','아이스크림/빙수'] },
+    { key:'치킨분식', label:'🍗 치킨·분식·주점', inds:['치킨','분식','주점','피자'] },
+    { key:'서비스', label:'💈 서비스', inds:['이미용','세탁','자동차 관련','스포츠 관련','오락','PC방','숙박','반려동물 관련','안경','화장품','약국','이사','인력 파견','임대'] },
+    { key:'교육', label:'📚 교육', inds:['기타 교육','교육 (외국어)','교육 (교과)','유아 관련 (교육 외)','유아관련'] },
+    { key:'판매기타', label:'🛍 판매·기타', inds:['편의점','의류 / 패션','종합소매점','농수산물','기타도소매','기타 서비스','(건강)식품','부동산 중개','운송','배달','세탁'] },
+  ];
+  let selCategory = null;    // 선택된 대분류 key
+
   /* 데이터 로드 */
   async function loadBrands(){
     if (!sb) { allBrands = demo(); afterLoad(); return; }
@@ -253,16 +272,28 @@ body {
   }
 
   function afterLoad(){
-    // 업종 칩 동적 생성
-    const industries = [...new Set(allBrands.map(b=>b.industry))];
+    // 실제 데이터에 존재하는 업종만 카운트
+    const indCount = {};
+    allBrands.forEach(b=>{ indCount[b.industry] = (indCount[b.industry]||0)+1; });
+
+    // 대분류 칩 생성 (해당 대분류에 브랜드가 하나라도 있으면 표시)
     const ic = $('#industryChips');
-    ic.innerHTML = industries.map(i=>`<button class="chip" data-ind="${escapeHtml(i)}">${escapeHtml(i)}</button>`).join('');
-    ic.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{
+    const cats = CATEGORIES.filter(cat => cat.inds.some(i=>indCount[i]));
+    ic.innerHTML = cats.map(cat=>`<button class="chip cat-chip" data-cat="${cat.key}">${cat.label}</button>`).join('');
+    ic.querySelectorAll('.cat-chip').forEach(c=>c.addEventListener('click',()=>{
       const on = c.classList.contains('on');
-      ic.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
-      if (!on){ c.classList.add('on'); selIndustry = c.dataset.ind; } else selIndustry = null;
+      ic.querySelectorAll('.cat-chip').forEach(x=>x.classList.remove('on'));
+      if (!on){
+        c.classList.add('on');
+        selCategory = c.dataset.cat;
+        selIndustry = null;  // 대분류 선택 시 세부 초기화
+      } else {
+        selCategory = null; selIndustry = null;
+      }
+      renderSubChips(indCount);
       shown = PAGE; render();
     }));
+
     // 예산 칩
     const bc = $('#budgetChips');
     bc.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{
@@ -274,10 +305,34 @@ body {
     render();
   }
 
+  /* 대분류 선택 시 그 안의 세부 업종 칩 표시 */
+  function renderSubChips(indCount){
+    const sub = $('#subChips');
+    if (!selCategory){ sub.innerHTML=''; sub.style.display='none'; return; }
+    const cat = CATEGORIES.find(c=>c.key===selCategory);
+    const avail = cat.inds.filter(i=>indCount[i]); // 데이터 있는 세부업종만
+    sub.style.display = 'flex';
+    sub.innerHTML = `<button class="chip sub-chip on" data-ind="">전체</button>` +
+      avail.map(i=>`<button class="chip sub-chip" data-ind="${escapeHtml(i)}">${escapeHtml(i)} <span class="sub-cnt">${indCount[i]}</span></button>`).join('');
+    sub.querySelectorAll('.sub-chip').forEach(c=>c.addEventListener('click',()=>{
+      sub.querySelectorAll('.sub-chip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+      selIndustry = c.dataset.ind || null;
+      shown = PAGE; render();
+    }));
+  }
+
   /* 필터 + 렌더 */
   function filtered(){
+    // 대분류가 선택됐고 세부업종 미선택 → 그 대분류에 속한 모든 업종
+    let catInds = null;
+    if (selCategory && !selIndustry){
+      const cat = CATEGORIES.find(c=>c.key===selCategory);
+      catInds = new Set(cat.inds);
+    }
     return allBrands.filter(b=>{
       if (selIndustry && b.industry !== selIndustry) return false;
+      if (catInds && !catInds.has(b.industry)) return false;
       if (selBudget){
         // 창업비용 정보가 있는 브랜드만 예산으로 거름.
         // 정보공개서(창업비용) 미연동 브랜드는 NULL이므로 필터에서 제외하지 않고 통과시킴.
