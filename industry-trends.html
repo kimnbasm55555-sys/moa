@@ -140,18 +140,70 @@ body {
   let chartsReady = false;
   let barChart, radarChart;
 
+  /* 대분류 매핑 (브랜드 추천 화면과 동일 6개 그룹) */
+  const CATEGORIES = [
+    { key:'외식', label:'외식', inds:['한식','중식','일식','서양식','기타 외식','기타 외국식','패스트푸드'] },
+    { key:'카페디저트', label:'카페·디저트', inds:['커피','음료 (커피 외)','제과제빵','아이스크림/빙수'] },
+    { key:'치킨분식', label:'치킨·분식·주점', inds:['치킨','분식','주점','피자'] },
+    { key:'서비스', label:'서비스', inds:['이미용','세탁','자동차 관련','스포츠 관련','오락','PC방','숙박','반려동물 관련','안경','화장품','약국','이사','인력 파견','임대'] },
+    { key:'교육', label:'교육', inds:['기타 교육','교육 (외국어)','교육 (교과)','유아 관련 (교육 외)','유아관련'] },
+    { key:'판매기타', label:'판매·기타', inds:['편의점','의류 / 패션','종합소매점','농수산물','기타도소매','기타 서비스','(건강)식품','부동산 중개','운송','배달'] },
+  ];
+
   async function load(){
     if (!sb){ trends = demo(); build(); return; }
     try {
-      const { data, error } = await sb.from('industry_trends').select('*');
-      if (error) throw error;
-      trends = data||[];
+      // franchise_brands 전체를 페이지로 로드 → 대분류로 집계
+      let all = [], offset = 0;
+      while (true) {
+        const { data, error } = await sb.from('franchise_brands')
+          .select('industry,store_count,avg_sales,close_rate,startup_cost_min,startup_cost_max')
+          .range(offset, offset+999);
+        if (error) throw error;
+        if (!data || !data.length) break;
+        all = all.concat(data);
+        if (data.length < 1000) break;
+        offset += 1000;
+      }
+      trends = aggregateByCategory(all);
       build();
     } catch(e){
       console.error('트렌드 로드 실패:',e);
       trends = demo(); build();
     }
   }
+
+  function aggregateByCategory(brands){
+    const indToCat = {};
+    CATEGORIES.forEach(c=>c.inds.forEach(i=>{ indToCat[i]=c; }));
+    const buckets = {};
+    brands.forEach(b=>{
+      const cat = indToCat[b.industry];
+      if (!cat) return;
+      if (!buckets[cat.key]) buckets[cat.key] = { label:cat.label, list:[] };
+      buckets[cat.key].list.push(b);
+    });
+    // 각 대분류 평균 산출
+    return CATEGORIES.filter(c=>buckets[c.key]).map(c=>{
+      const list = buckets[c.key].list;
+      const n = list.length;
+      const avg = (f)=> {
+        const vals = list.map(f).filter(v=>v!=null && !isNaN(v));
+        return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+      };
+      const sumStores = list.reduce((a,b)=>a+(b.store_count||0),0);
+      return {
+        industry: c.label,
+        brand_count: n,
+        avg_startup_cost: null,  // 창업비용 API 미연동
+        avg_close_rate: +avg(b=>b.close_rate).toFixed(1),
+        avg_store_sales: Math.round(avg(b=>b.avg_sales)),
+        avg_store_count: Math.round(sumStores/n),
+        shopinshop_pct: 0
+      };
+    });
+  }
+
   function demo(){
     return [
       {industry:'편의점',brand_count:1,avg_startup_cost:7500,avg_close_rate:2.1,avg_store_sales:190000000,avg_store_count:3200,shopinshop_pct:0},
@@ -165,10 +217,10 @@ body {
   function build(){
     if(!trends.length){ $('#wrap').innerHTML='<div class="loading">데이터가 없어요.</div>'; return; }
 
-    // 하이라이트 계산
+    // 하이라이트 계산 (대분류 기준, 표본 충분)
     const mostStable = [...trends].sort((a,b)=>a.avg_close_rate-b.avg_close_rate)[0];
     const highestSales = [...trends].sort((a,b)=>b.avg_store_sales-a.avg_store_sales)[0];
-    const lowestCost = [...trends].sort((a,b)=>a.avg_startup_cost-b.avg_startup_cost)[0];
+    const largestScale = [...trends].sort((a,b)=>b.avg_store_count-a.avg_store_count)[0];
 
     $('#wrap').innerHTML = `
       <div class="kpi-row">
@@ -183,17 +235,17 @@ body {
           <div class="kpi-sub">점포당 연 ${(highestSales.avg_store_sales/1e8).toFixed(1)}억</div>
         </div>
         <div class="kpi accent">
-          <div class="kpi-cap">가장 낮은 창업비</div>
-          <div class="kpi-val">${esc(lowestCost.industry)}</div>
-          <div class="kpi-sub">약 ${fmtMan(lowestCost.avg_startup_cost)}</div>
+          <div class="kpi-cap">가장 규모 큰</div>
+          <div class="kpi-val">${esc(largestScale.industry)}</div>
+          <div class="kpi-sub">브랜드당 평균 ${largestScale.avg_store_count.toLocaleString()}개점</div>
         </div>
       </div>
 
-      <div class="sample-note">지금은 예시 데이터예요. 공정거래위원회 공식 데이터를 연결하면 전국 실제 업종 지표로 바뀌어요.</div>
+      <div class="sample-note">📊 공정거래위원회 정보공개서 <b>2025년 기준</b> · 6개 대분류로 집계. 세부 브랜드는 '브랜드 찾기'에서 확인하세요.</div>
 
       <div class="section">
-        <h2>창업비용 vs 폐점률</h2>
-        <div class="sec-sub">막대=평균 창업비용(만원), 점=폐점률(%). 왼쪽 아래일수록 부담 적고 안정적</div>
+        <h2>점포당 매출 vs 폐점률</h2>
+        <div class="sec-sub">막대=점포당 연매출(억), 점=폐점률(%). 오른쪽 아래일수록 수익 높고 안정적</div>
         <div class="chart-box"><canvas id="barChart"></canvas></div>
       </div>
 
@@ -224,10 +276,10 @@ body {
           <span style="font-size:var(--fs-cap);color:var(--text-3)">브랜드 ${t.brand_count}개</span>
         </div>
         <div class="ind-metrics">
-          <div class="ind-metric"><span class="m-k">평균 창업비</span><span class="m-v">${fmtMan(t.avg_startup_cost)}</span></div>
+          <div class="ind-metric"><span class="m-k">브랜드 수</span><span class="m-v">${t.brand_count.toLocaleString()}개</span></div>
           <div class="ind-metric"><span class="m-k">폐점률</span><span class="m-v ${closeGood?'good':'bad'}">${t.avg_close_rate}%</span></div>
           <div class="ind-metric"><span class="m-k">점포당 매출</span><span class="m-v">연 ${(t.avg_store_sales/1e8).toFixed(1)}억</span></div>
-          <div class="ind-metric"><span class="m-k">평균 가맹점</span><span class="m-v">${t.avg_store_count.toLocaleString()}개</span></div>
+          <div class="ind-metric"><span class="m-k">브랜드당 가맹점</span><span class="m-v">${t.avg_store_count.toLocaleString()}개</span></div>
         </div>
       </div>`;
     }).join('');
@@ -250,12 +302,12 @@ body {
     const c = themeColors();
     const labels = trends.map(t=>t.industry);
 
-    // 막대(창업비) + 선(폐점률) 콤보
+    // 막대(점포당 매출, 억) + 선(폐점률) 콤보
     barChart = new Chart($('#barChart'), {
       data:{
         labels,
         datasets:[
-          { type:'bar', label:'평균 창업비용(만원)', data:trends.map(t=>t.avg_startup_cost),
+          { type:'bar', label:'점포당 연매출(억)', data:trends.map(t=>+(t.avg_store_sales/1e8).toFixed(1)),
             backgroundColor:c.accent+'cc', borderRadius:6, yAxisID:'y', order:2 },
           { type:'line', label:'폐점률(%)', data:trends.map(t=>t.avg_close_rate),
             borderColor:c.warn, backgroundColor:c.warn, tension:.3, yAxisID:'y1', order:1,
@@ -267,30 +319,28 @@ body {
         plugins:{ legend:{ labels:{ color:c.text2, font:{family:'Pretendard',size:12} } } },
         scales:{
           x:{ ticks:{ color:c.text2, font:{family:'Pretendard'} }, grid:{ display:false } },
-          y:{ position:'left', ticks:{ color:c.text3, font:{family:'Pretendard'} }, grid:{ color:c.border }, title:{display:true,text:'창업비(만원)',color:c.text3,font:{family:'Pretendard'}} },
+          y:{ position:'left', ticks:{ color:c.text3, font:{family:'Pretendard'} }, grid:{ color:c.border }, title:{display:true,text:'점포당 매출(억)',color:c.text3,font:{family:'Pretendard'}} },
           y1:{ position:'right', ticks:{ color:c.warn, font:{family:'Pretendard'} }, grid:{ display:false }, title:{display:true,text:'폐점률(%)',color:c.warn,font:{family:'Pretendard'}} }
         }
       }
     });
 
     // 레이더(종합) — 지표 100점 환산
-    const maxCost = Math.max(...trends.map(t=>t.avg_startup_cost));
     const maxSales = Math.max(...trends.map(t=>t.avg_store_sales));
     const maxCount = Math.max(...trends.map(t=>t.avg_store_count));
     const maxClose = Math.max(...trends.map(t=>t.avg_close_rate));
-    const palette = [c.accent, c.warn, c.ok, '#a15fd0', '#d0705f'];
+    const palette = [c.accent, c.warn, c.ok, '#a15fd0', '#d0705f', '#5f9dd0'];
     radarChart = new Chart($('#radarChart'), {
       type:'radar',
       data:{
-        labels:['안정성','수익성','진입 용이','규모','유연성'],
+        labels:['안정성','수익성','규모','브랜드 수'],
         datasets: trends.map((t,i)=>({
           label:t.industry,
           data:[
             Math.round((1 - t.avg_close_rate/maxClose)*100),        // 안정성(폐점률 역)
             Math.round(t.avg_store_sales/maxSales*100),             // 수익성
-            Math.round((1 - t.avg_startup_cost/maxCost)*100),       // 진입 용이(창업비 역)
-            Math.round(t.avg_store_count/maxCount*100),             // 규모
-            t.shopinshop_pct                                        // 유연성(샵인샵)
+            Math.round(t.avg_store_count/maxCount*100),             // 규모(평균 가맹점)
+            Math.round(t.brand_count/Math.max(...trends.map(x=>x.brand_count))*100)  // 브랜드 수(선택폭)
           ],
           borderColor:palette[i%palette.length],
           backgroundColor:palette[i%palette.length]+'22',
