@@ -179,7 +179,7 @@ body {
 </div>
 
 <div class="sample-note">
-  <div class="note">지금은 예시 데이터예요. 공정거래위원회 공식 데이터(전국 등록 브랜드)를 연결하면 실제 브랜드가 조건에 맞춰 나와요.</div>
+  <div class="note">📊 공정거래위원회 정보공개서 <b>2025년 기준</b> 데이터예요. 프랜차이즈 정보는 연 1회 신고·공개되므로, 실제 현재 운영 상황(폐업·조건 변경 등)은 담당자와의 상담에서 확인하세요.</div>
 </div>
 
 <div class="list" id="list"><div class="loading">불러오는 중…</div></div>
@@ -264,8 +264,17 @@ body {
     return allBrands.filter(b=>{
       if (selIndustry && b.industry !== selIndustry) return false;
       if (selBudget){
-        // 예산 범위와 창업비용 범위가 겹치면 통과
-        if (b.startup_cost_max < selBudget.min || b.startup_cost_min > selBudget.max) return false;
+        // 창업비용 정보가 있는 브랜드만 예산으로 거름.
+        // 정보공개서(창업비용) 미연동 브랜드는 NULL이므로 필터에서 제외하지 않고 통과시킴.
+        const hasMin = b.startup_cost_min != null;
+        const hasMax = b.startup_cost_max != null;
+        if (hasMin || hasMax){
+          const lo = hasMin ? b.startup_cost_min : 0;
+          const hi = hasMax ? b.startup_cost_max : 999999;
+          // 예산 범위와 창업비용 범위가 겹치면 통과
+          if (hi < selBudget.min || lo > selBudget.max) return false;
+        }
+        // (창업비용 정보 없음 → 통과. 카드에 '창업비용 정보 준비중' 표기)
       }
       return true;
     });
@@ -289,7 +298,11 @@ body {
   }
 
   function cardHtml(b){
-    const costMin = fmtMan(b.startup_cost_min), costMax = fmtMan(b.startup_cost_max);
+    // 창업비용: 값이 있으면 범위 표시, 없으면 '정보 준비중'
+    const hasCost = b.startup_cost_min != null || b.startup_cost_max != null;
+    const costHtml = hasCost
+      ? `<span class="cost-label">예상 창업비용 </span><span class="cost-val">${fmtMan(b.startup_cost_min)}~${fmtMan(b.startup_cost_max)}</span>`
+      : `<span class="cost-label">창업비용 </span><span class="cost-val" style="color:var(--text-3);font-weight:600">정보 준비중</span>`;
     const salesEok = b.avg_sales ? (b.avg_sales/100000000).toFixed(1) : null;
     const closeGood = b.close_rate!=null && b.close_rate < 4;
     const reason = aiReason(b);
@@ -304,7 +317,7 @@ body {
             <div class="b-industry">${escapeHtml(b.industry)}</div>
           </div>
         </div>
-        <div class="b-cost"><span class="cost-label">예상 창업비용 </span><span class="cost-val">${costMin}~${costMax}</span></div>
+        <div class="b-cost">${costHtml}</div>
         <div class="metrics">
           ${b.store_count!=null?`<span class="metric">가맹점 <b>${b.store_count.toLocaleString()}개</b></span>`:''}
           ${salesEok?`<span class="metric">점포당 매출 <b>연 ${salesEok}억</b></span>`:''}
