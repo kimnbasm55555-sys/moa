@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모아 — 담당자 프로필</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:48px; --sp-8:64px;
+  --fs-cap:13px; --fs-sm:15px; --fs-base:17px; --fs-lg:20px; --fs-xl:26px; --fs-2xl:34px;
+  --radius:16px; --radius-sm:12px; --radius-lg:22px; --maxw:600px;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --accent:#5266eb; --accent-press:#4255d4;
+  --ok:#2f9e6f; --ok-soft:#e6f4ee; --warn:#b8862a; --warn-soft:#f6efe0;
+}
+[data-theme="light"] {
+  --bg:#f6f5f2; --surface:#ffffff; --surface-2:#efece5; --border:#e4e0d6; --border-strong:#d3cdbe;
+  --text:#2a2924; --text-2:#5a5548; --text-3:#8a8478;
+  --shadow:0 1px 2px rgba(42,41,36,.03),0 6px 20px rgba(42,41,36,.05); --accent-soft:#ecefff;
+}
+[data-theme="dark"] {
+  --bg:#171721; --surface:#1e1e2a; --surface-2:#272735; --border:#2c2c3a; --border-strong:#3a3a4a;
+  --text:#ededf3; --text-2:#a3a3b2; --text-3:#6f6f80;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px rgba(0,0,0,.4);
+  --accent:#5c70ef; --accent-soft:#232338; --ok:#4bbd8c; --ok-soft:#1c3029; --warn:#d3a44e; --warn-soft:#302a1c;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+html { -webkit-text-size-adjust:100%; }
+body {
+  font-family:'Pretendard',-apple-system,sans-serif; background:var(--bg); color:var(--text);
+  line-height:1.55; transition:background .4s var(--ease),color .4s var(--ease); -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important;} }
+
+.topbar {
+  position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between;
+  padding:var(--sp-4) var(--sp-5); background:color-mix(in srgb,var(--bg) 82%,transparent);
+  backdrop-filter:blur(12px); border-bottom:1px solid var(--border);
+}
+.back { display:flex; align-items:center; gap:var(--sp-2); font-weight:700; font-size:var(--fs-base); color:var(--text); background:none; border:none; cursor:pointer; font-family:inherit; }
+.theme-btn { display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:50%;
+  background:var(--surface); border:1px solid var(--border); color:var(--text-2); cursor:pointer; transition:all .2s var(--ease); }
+.theme-btn:hover { color:var(--text); border-color:var(--border-strong); }
+
+.wrap { max-width:var(--maxw); margin:0 auto; padding-bottom:110px; }
+
+/* ===== 갤러리 슬라이드 ===== */
+.gallery { position:relative; margin-top:var(--sp-4); }
+.gallery-track {
+  display:flex; gap:var(--sp-3); overflow-x:auto; scroll-snap-type:x mandatory;
+  padding:0 var(--sp-5); scrollbar-width:none; -webkit-overflow-scrolling:touch;
+}
+.gallery-track::-webkit-scrollbar { display:none; }
+.slide {
+  flex:0 0 auto; width:74%; max-width:420px; scroll-snap-align:center; position:relative;
+  border-radius:var(--radius); overflow:hidden; background:var(--surface-2); cursor:pointer;
+  aspect-ratio:3/4; animation:fadeUp .4s var(--ease);
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:none;} }
+.slide video, .slide img { width:100%; height:100%; object-fit:cover; display:block; }
+.slide .play-badge {
+  position:absolute; top:12px; left:12px; display:flex; align-items:center; gap:5px;
+  background:rgba(0,0,0,.55); color:#fff; font-size:var(--fs-cap); font-weight:700;
+  padding:5px 10px; border-radius:99px; backdrop-filter:blur(4px);
+}
+.slide .dur-badge {
+  position:absolute; bottom:12px; right:12px; background:rgba(0,0,0,.55); color:#fff;
+  font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; backdrop-filter:blur(4px);
+}
+.slide .tap-hint {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none;
+}
+.slide .tap-hint .pcircle {
+  width:56px; height:56px; border-radius:50%; background:rgba(0,0,0,.45); backdrop-filter:blur(4px);
+  display:flex; align-items:center; justify-content:center;
+}
+/* 갤러리 인디케이터 */
+.dots { display:flex; gap:6px; justify-content:center; margin-top:var(--sp-3); }
+.dot { width:6px; height:6px; border-radius:50%; background:var(--border-strong); transition:all .2s var(--ease); }
+.dot.on { background:var(--accent); width:18px; border-radius:99px; }
+
+/* ===== 프로필 정보 ===== */
+.profile { padding:var(--sp-5); }
+.p-top { display:flex; align-items:center; gap:var(--sp-4); }
+.p-avatar { width:64px; height:64px; border-radius:50%; flex-shrink:0; background:var(--accent-soft); color:var(--accent);
+  display:flex; align-items:center; justify-content:center; font-weight:800; font-size:var(--fs-2xl); }
+.p-id { flex:1; min-width:0; }
+.p-name { font-size:var(--fs-xl); font-weight:800; letter-spacing:-.02em; }
+.p-name .verify { display:inline-flex; align-items:center; gap:3px; font-size:var(--fs-cap); font-weight:700; color:var(--ok); background:var(--ok-soft); padding:3px 8px; border-radius:99px; vertical-align:middle; margin-left:var(--sp-2); }
+.p-brand { font-size:var(--fs-base); color:var(--text-2); margin-top:2px; }
+.p-rating { display:flex; align-items:center; gap:var(--sp-2); margin-top:var(--sp-4); }
+.p-rating .stars { color:var(--warn); font-size:var(--fs-lg); letter-spacing:2px; }
+.p-rating .score { font-size:var(--fs-lg); font-weight:800; }
+.p-rating .cnt { font-size:var(--fs-cap); color:var(--text-3); }
+
+.p-meta { display:flex; gap:var(--sp-2); flex-wrap:wrap; margin-top:var(--sp-4); }
+.meta-chip { font-size:var(--fs-cap); font-weight:600; color:var(--text-2); background:var(--surface-2); padding:6px 12px; border-radius:99px; }
+
+.p-intro { margin-top:var(--sp-5); padding:var(--sp-4); background:var(--surface-2); border-radius:var(--radius-sm);
+  font-size:var(--fs-sm); color:var(--text-2); line-height:1.65; }
+
+/* 후기 요약 */
+.rv-summary { padding:0 var(--sp-5); }
+.rv-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:var(--sp-5); }
+.rv-card h3 { font-size:var(--fs-base); font-weight:700; margin-bottom:var(--sp-4); }
+.rv-bars { display:grid; gap:var(--sp-3); }
+.rv-bar-row { display:grid; grid-template-columns:80px 1fr 36px; align-items:center; gap:var(--sp-3); font-size:var(--fs-cap); }
+.rv-bar-row .rk { color:var(--text-2); }
+.rv-bar-track { height:7px; background:var(--surface-2); border-radius:99px; overflow:hidden; }
+.rv-bar-fill { height:100%; background:var(--warn); border-radius:99px; transition:width .6s var(--ease); }
+.rv-bar-row .rv { text-align:right; font-weight:700; color:var(--warn); }
+
+.section-label { padding:var(--sp-6) var(--sp-5) var(--sp-2); font-size:var(--fs-lg); font-weight:800; letter-spacing:-.02em; }
+
+.loading { text-align:center; padding:var(--sp-8); color:var(--text-3); }
+.sample-note { margin:var(--sp-4) var(--sp-5) 0; font-size:11px; color:var(--text-3); background:var(--surface-2); border-radius:var(--radius-sm); padding:var(--sp-3) var(--sp-4); line-height:1.5; }
+
+/* ===== 하단 CTA ===== */
+.bottombar {
+  position:fixed; bottom:0; left:0; right:0; z-index:30;
+  padding:var(--sp-4) var(--sp-5) max(var(--sp-4),env(safe-area-inset-bottom));
+  background:color-mix(in srgb,var(--bg) 90%,transparent); backdrop-filter:blur(12px); border-top:1px solid var(--border);
+}
+.bottombar-inner { max-width:var(--maxw); margin:0 auto; }
+.btn { width:100%; font-family:inherit; font-size:var(--fs-base); font-weight:700; letter-spacing:-.01em;
+  border-radius:var(--radius-sm); cursor:pointer; transition:all .18s var(--ease); border:none; padding:var(--sp-4) var(--sp-5);
+  background:var(--accent); color:#fff; }
+[data-theme="dark"] .btn { color:#06120d; }
+.btn:hover { background:var(--accent-press); }
+.btn:active { transform:scale(.99); }
+
+/* ===== 풀스크린 뷰어 ===== */
+.viewer { position:fixed; inset:0; z-index:50; background:#000; display:none; align-items:center; justify-content:center; }
+.viewer.open { display:flex; animation:fadeIn .2s var(--ease); }
+@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+.viewer video, .viewer img { max-width:100%; max-height:100%; object-fit:contain; }
+.viewer-close { position:absolute; top:16px; right:16px; width:44px; height:44px; border-radius:50%;
+  background:rgba(255,255,255,.15); border:none; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
+</style>
+</head>
+<body data-theme="light">
+
+<div class="topbar">
+  <button class="back" onclick="history.length>1?history.back():null">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    담당자 프로필
+  </button>
+  <button class="theme-btn" id="themeBtn" aria-label="테마 전환">
+    <svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+  </button>
+</div>
+
+<div class="wrap" id="wrap"><div class="loading">불러오는 중…</div></div>
+
+<div class="bottombar">
+  <div class="bottombar-inner">
+    <button class="btn" id="chatBtn">대화 시작하기</button>
+  </div>
+</div>
+
+<!-- 풀스크린 뷰어 -->
+<div class="viewer" id="viewer">
+  <button class="viewer-close" id="viewerClose" aria-label="닫기">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
+  <div id="viewerContent"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const SUPABASE_URL = "https://wxecxkckbpgzcdegtahy.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_IVu4Fuyb8pKl5-ZkuYqoKA_iHKTwgpq";
+  let sb = null;
+  try { if (SUPABASE_URL.startsWith("http") && window.supabase) sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+  catch(e){ console.warn("Supabase 미연결:", e); }
+
+  const $ = s=>document.querySelector(s);
+
+  /* 어떤 영업사원 프로필인지 (개발: 하드코딩, 실제: URL 파라미터 ?rep=) */
+  const params = new URLSearchParams(location.search);
+  const REP_CODE = params.get('rep') || 'rep_test_a';
+
+  /* 테마 */
+  const themeBtn=$('#themeBtn'), themeIcon=$('#themeIcon');
+  const sun='<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+  const moon='<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>';
+  themeBtn.addEventListener('click',()=>{ const b=document.body,d=b.getAttribute('data-theme')==='dark'; b.setAttribute('data-theme',d?'light':'dark'); themeIcon.innerHTML=d?sun:moon; });
+
+  let profile=null, media=[], reviews=[];
+
+  const SCORE_LABELS = {
+    score_kindness:'친절도', score_accuracy:'설명 정확성', score_response:'응답 속도',
+    score_fulfillment:'조건 이행', score_nopressure:'강매 없음'
+  };
+
+  async function load(){
+    if(!sb){ demo(); build(); return; }
+    try {
+      const { data:prof } = await sb.from('rep_profiles').select('*').eq('rep_code',REP_CODE).maybeSingle();
+      profile = prof;
+      const { data:med } = await sb.from('rep_media').select('*').eq('rep_code',REP_CODE).order('sort_order',{ascending:true});
+      media = med||[];
+      const { data:rvs } = await sb.from('reviews').select('*').eq('rep_code',REP_CODE);
+      reviews = rvs||[];
+      if(!profile){ demo(); }
+      build();
+    } catch(e){ console.error('로드 실패:',e); demo(); build(); }
+  }
+
+  function demo(){
+    profile = { rep_code:'rep_test_a', name:'김담당', brand:'브랜드 A', intro:'15년 경력의 창업 컨설턴트입니다. 과장 없이 솔직하게 안내드려요.', career_years:15, region:'서울·경기' };
+    media = [
+      { media_type:'video', url:'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4', thumb_url:'', duration:15, sort_order:1 },
+      { media_type:'image', url:'https://picsum.photos/seed/moa1/600/800', sort_order:2 },
+      { media_type:'image', url:'https://picsum.photos/seed/moa2/600/800', sort_order:3 }
+    ];
+    reviews = [
+      { score_kindness:5, score_accuracy:5, score_response:4, score_fulfillment:5, score_nopressure:4 },
+      { score_kindness:5, score_accuracy:4, score_response:5, score_fulfillment:4, score_nopressure:5 }
+    ];
+  }
+
+  function build(){
+    const initial=(profile.name||'담')[0];
+    const avg = reviewAvg();
+    const galleryHtml = media.length ? galleryBlock() : '';
+    const note = (!sb || media.some(m=>m.url.includes('picsum')||m.url.includes('gtv-videos'))) ?
+      '<div class="sample-note">지금은 예시 미디어예요. 담당자가 rep-media에 올린 실제 소개 영상·사진으로 교체됩니다.</div>' : '';
+
+    $('#wrap').innerHTML = `
+      ${galleryHtml}
+      ${note}
+      <div class="profile">
+        <div class="p-top">
+          <div class="p-avatar">${esc(initial)}</div>
+          <div class="p-id">
+            <div class="p-name">${esc(profile.name||'담당자')}<span class="verify">✓ 인증</span></div>
+            <div class="p-brand">${esc(profile.brand||'')}</div>
+          </div>
+        </div>
+        ${avg ? `<div class="p-rating"><span class="stars">${starStr(avg)}</span><span class="score">${avg}</span><span class="cnt">후기 ${reviews.length}개</span></div>` : ''}
+        <div class="p-meta">
+          ${profile.career_years?`<span class="meta-chip">경력 ${profile.career_years}년</span>`:''}
+          ${profile.region?`<span class="meta-chip">${esc(profile.region)}</span>`:''}
+          <span class="meta-chip">서류 인증완료</span>
+        </div>
+        ${profile.intro?`<div class="p-intro">${esc(profile.intro)}</div>`:''}
+      </div>
+
+      ${reviews.length ? `
+      <div class="rv-summary">
+        <div class="rv-card">
+          <h3>항목별 평가</h3>
+          <div class="rv-bars">${reviewBars()}</div>
+        </div>
+      </div>` : ''}
+    `;
+    initGallery();
+    $('#chatBtn').addEventListener('click',()=>alert(`${profile.name} 님과 대화를 시작합니다.\n(실제 앱에서는 인앱 채팅으로 연결)`));
+  }
+
+  /* ===== 갤러리 ===== */
+  function galleryBlock(){
+    const slides = media.map((m,i)=>{
+      if(m.media_type==='video'){
+        return `<div class="slide" data-idx="${i}" data-type="video" data-url="${esc(m.url)}">
+          <video src="${esc(m.url)}${'#t=0.1'}" muted loop playsinline preload="metadata" ${m.thumb_url?`poster="${esc(m.thumb_url)}"`:''}></video>
+          <span class="play-badge">▶ 소개 영상</span>
+          ${m.duration?`<span class="dur-badge">0:${String(m.duration).padStart(2,'0')}</span>`:''}
+          <div class="tap-hint"><div class="pcircle">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
+          </div></div>
+        </div>`;
+      }
+      return `<div class="slide" data-idx="${i}" data-type="image" data-url="${esc(m.url)}">
+        <img src="${esc(m.url)}" alt="담당자 사진" loading="lazy">
+      </div>`;
+    }).join('');
+    const dots = media.map((_,i)=>`<span class="dot ${i===0?'on':''}" data-dot="${i}"></span>`).join('');
+    return `<div class="gallery">
+      <div class="gallery-track" id="galTrack">${slides}</div>
+      <div class="dots">${dots}</div>
+    </div>`;
+  }
+
+  function initGallery(){
+    const track=$('#galTrack'); if(!track) return;
+    const slides=[...track.querySelectorAll('.slide')];
+    const dots=[...document.querySelectorAll('.dot')];
+
+    // 영상 muted autoplay (첫 영상 자동재생)
+    slides.forEach(s=>{
+      if(s.dataset.type==='video'){
+        const v=s.querySelector('video');
+        if(v){ v.play().catch(()=>{}); }
+      }
+      // 탭 → 풀스크린
+      s.addEventListener('click',()=>openViewer(s.dataset.type, s.dataset.url));
+    });
+
+    // 스크롤 시 dot 업데이트
+    track.addEventListener('scroll',()=>{
+      const c = track.scrollLeft + track.clientWidth/2;
+      let active=0, best=Infinity;
+      slides.forEach((s,i)=>{
+        const center = s.offsetLeft + s.offsetWidth/2;
+        const d=Math.abs(center-c);
+        if(d<best){ best=d; active=i; }
+      });
+      dots.forEach((d,i)=>d.classList.toggle('on',i===active));
+    });
+  }
+
+  /* ===== 풀스크린 뷰어 (소리 ON) ===== */
+  const viewer=$('#viewer'), viewerContent=$('#viewerContent');
+  function openViewer(type,url){
+    if(type==='video'){
+      viewerContent.innerHTML=`<video src="${esc(url)}" controls autoplay playsinline style="max-width:100%;max-height:100%"></video>`;
+    } else {
+      viewerContent.innerHTML=`<img src="${esc(url)}" alt="담당자 사진">`;
+    }
+    viewer.classList.add('open');
+  }
+  function closeViewer(){
+    viewer.classList.remove('open');
+    viewerContent.innerHTML='';
+  }
+  $('#viewerClose').addEventListener('click',closeViewer);
+  viewer.addEventListener('click',e=>{ if(e.target===viewer) closeViewer(); });
+
+  /* ===== 후기 계산 ===== */
+  function reviewAvg(){
+    if(!reviews.length) return null;
+    const keys=Object.keys(SCORE_LABELS);
+    let sum=0,n=0;
+    reviews.forEach(r=>keys.forEach(k=>{ if(r[k]){ sum+=r[k]; n++; } }));
+    return n? (sum/n).toFixed(1) : null;
+  }
+  function reviewBars(){
+    const keys=Object.keys(SCORE_LABELS);
+    return keys.map(k=>{
+      const vals=reviews.map(r=>r[k]).filter(v=>v!=null);
+      const avg = vals.length? (vals.reduce((a,b)=>a+b,0)/vals.length):0;
+      const pct=(avg/5*100).toFixed(0);
+      return `<div class="rv-bar-row">
+        <span class="rk">${SCORE_LABELS[k]}</span>
+        <div class="rv-bar-track"><div class="rv-bar-fill" style="width:${pct}%"></div></div>
+        <span class="rv">${avg.toFixed(1)}</span>
+      </div>`;
+    }).join('');
+  }
+  function starStr(avg){
+    const full=Math.round(avg);
+    return '★'.repeat(full)+'☆'.repeat(5-full);
+  }
+
+  function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  load();
+})();
+</script>
+</body>
+</html>
