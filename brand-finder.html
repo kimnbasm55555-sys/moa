@@ -136,6 +136,14 @@ body {
 .loading { text-align:center; padding:var(--sp-7); color:var(--text-3); font-size:var(--fs-sm); }
 
 .sample-note { max-width:var(--maxw); margin:0 auto; padding:0 var(--sp-5) var(--sp-4); }
+.more-btn {
+  width:100%; font-family:inherit; font-size:var(--fs-sm); font-weight:700; color:var(--accent);
+  background:var(--surface); border:1.5px solid var(--border-strong); border-radius:var(--radius-sm);
+  padding:var(--sp-4); cursor:pointer; transition:all .16s var(--ease); margin-top:var(--sp-2);
+}
+.more-btn:hover { border-color:var(--accent); background:var(--accent-soft); }
+.more-btn:active { transform:scale(.99); }
+.more-btn .more-remain { color:var(--text-3); font-weight:500; }
 .sample-note .note {
   font-size:11px; color:var(--text-3); background:var(--surface-2); border-radius:var(--radius-sm);
   padding:var(--sp-3) var(--sp-4); line-height:1.5;
@@ -215,12 +223,19 @@ body {
   let selIndustry = null;
   let selBudget = null;      // {min,max}
   let selectedId = null;
+  const PAGE = 20;           // 한 번에 보여줄 브랜드 수
+  let shown = PAGE;          // 현재 노출 개수
 
   /* 데이터 로드 */
   async function loadBrands(){
     if (!sb) { allBrands = demo(); afterLoad(); return; }
     try {
-      const { data, error } = await sb.from('franchise_brands').select('*').order('close_rate',{ascending:true});
+      // 전체 브랜드 로드 (기본 1000 제한 → range로 확장)
+      // 정렬: 가맹점 많은 순(규모 있는 브랜드 우선). 카드 내에서 폐점률도 함께 보여줌.
+      const { data, error } = await sb.from('franchise_brands')
+        .select('*')
+        .order('store_count',{ascending:false})
+        .range(0, 4999);
       if (error) throw error;
       allBrands = data||[];
       afterLoad();
@@ -246,7 +261,7 @@ body {
       const on = c.classList.contains('on');
       ic.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
       if (!on){ c.classList.add('on'); selIndustry = c.dataset.ind; } else selIndustry = null;
-      render();
+      shown = PAGE; render();
     }));
     // 예산 칩
     const bc = $('#budgetChips');
@@ -254,7 +269,7 @@ body {
       const on = c.classList.contains('on');
       bc.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
       if (!on){ c.classList.add('on'); selBudget={min:+c.dataset.min,max:+c.dataset.max}; } else selBudget=null;
-      render();
+      shown = PAGE; render();
     }));
     render();
   }
@@ -287,13 +302,22 @@ body {
       listEl.innerHTML = '<div class="empty"><div class="empty-ic">🔍</div><h3>조건에 맞는 브랜드가 없어요</h3><p>예산이나 업종을 바꿔보세요.</p></div>';
       return;
     }
-    // 정렬: 폐점률 낮은 순(안정) — 이미 쿼리에서 정렬됨
-    listEl.innerHTML = rows.map(cardHtml).join('');
+    // 상위 shown개만 렌더 (가맹점 많은 순 정렬은 로드 시 적용됨)
+    const visible = rows.slice(0, shown);
+    let html = visible.map(cardHtml).join('');
+    // 더보기 버튼
+    if (rows.length > shown){
+      const remain = rows.length - shown;
+      html += `<button class="more-btn" id="moreBtn">브랜드 ${Math.min(PAGE,remain)}개 더보기 <span class="more-remain">(${remain}개 남음)</span></button>`;
+    }
+    listEl.innerHTML = html;
     listEl.querySelectorAll('.card').forEach(c=>c.addEventListener('click',()=>{
       const id=c.dataset.id;
       selectedId = (selectedId===id)?null:id;
       render(); updateBottom();
     }));
+    const moreBtn = document.getElementById('moreBtn');
+    if (moreBtn) moreBtn.addEventListener('click',()=>{ shown += PAGE; render(); });
     updateBottom();
   }
 
