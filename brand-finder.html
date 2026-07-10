@@ -195,7 +195,7 @@ body {
 </div>
 
 <div class="sample-note">
-  <div class="note">📊 공정거래위원회 정보공개서 <b>2025년 기준</b> 데이터예요. 프랜차이즈 정보는 연 1회 신고·공개되므로, 실제 현재 운영 상황(폐업·조건 변경 등)은 담당자와의 상담에서 확인하세요.</div>
+  <div class="note">📊 공정거래위원회 정보공개서 <b>2025년 기준</b> 데이터예요. 프랜차이즈 정보는 연 1회 신고·공개되므로, 실제 현재 운영 상황(폐업·조건 변경 등)은 담당자와의 상담에서 확인하세요. 운영 지속률은 신생·소규모 브랜드에서 왜곡될 수 있어 참고용입니다.</div>
 </div>
 
 <div class="list" id="list"><div class="loading">불러오는 중…</div></div>
@@ -383,7 +383,9 @@ body {
       ? `<span class="cost-label">예상 창업비용 </span><span class="cost-val">${fmtMan(b.startup_cost_min)}~${fmtMan(b.startup_cost_max)}</span>`
       : `<span class="cost-label">창업비용 </span><span class="cost-val" style="color:var(--text-3);font-weight:600">정보 준비중</span>`;
     const salesEok = b.avg_sales ? (b.avg_sales/100000000).toFixed(1) : null;
-    const closeGood = b.close_rate!=null && b.close_rate < 4;
+    // 운영 지속률 = 100 - 폐점률 (긍정 프레임). 색은 중립 유지(경고색 미사용)
+    const sustainRate = b.close_rate!=null ? (100 - b.close_rate).toFixed(1) : null;
+    const sustainHigh = sustainRate!=null && +sustainRate >= 96;  // 매우 높을 때만 은은한 강조
     const reason = aiReason(b);
     const tags = (b.tags||'').split(',').filter(Boolean).map(t=>`<span class="tag">#${escapeHtml(t.trim())}</span>`).join('');
     const sel = selectedId===b.id ? 'selected':'';
@@ -400,18 +402,22 @@ body {
         <div class="metrics">
           ${b.store_count!=null?`<span class="metric">가맹점 <b>${b.store_count.toLocaleString()}개</b></span>`:''}
           ${salesEok?`<span class="metric">점포당 매출 <b>연 ${salesEok}억</b></span>`:''}
-          ${b.close_rate!=null?`<span class="metric ${closeGood?'good':''}">폐점률 <b>${b.close_rate}%</b></span>`:''}
+          ${sustainRate!=null?`<span class="metric ${sustainHigh?'good':''}">운영 지속률 <b>${sustainRate}%</b></span>`:''}
         </div>
         ${tags?`<div class="tags">${tags}</div>`:''}
         ${reason?`<div class="reason"><span class="ai-badge">AI</span><span>${reason}</span></div>`:''}
       </div>`;
   }
 
-  /* AI 추천 이유 — 실제 수치 기반 (환각 없음) */
+  /* AI 추천 이유 — 실제 수치 기반 (환각 없음, 긍정 프레임) */
   function aiReason(b){
     const parts=[];
-    if (b.close_rate!=null && b.close_rate<4) parts.push(`폐점률이 ${b.close_rate}%로 낮아 안정적이에요`);
+    if (b.close_rate!=null && b.close_rate<4){
+      const sustain = (100 - b.close_rate).toFixed(1);
+      parts.push(`가맹점 운영 지속률이 ${sustain}%로 높은 편이에요`);
+    }
     if (b.avg_sales && b.avg_sales>=400000000) parts.push(`점포당 매출이 상위권이에요`);
+    if (b.store_count && b.store_count>=500) parts.push(`전국에 가맹점이 많은 브랜드예요`);
     if (b.shop_in_shop) parts.push(`샵인샵으로도 열 수 있어요`);
     const tagArr=(b.tags||'').split(',').map(t=>t.trim());
     if (tagArr.includes('배우모델')) parts.push(`최근 인지도가 오르는 브랜드예요`);
