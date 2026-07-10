@@ -227,7 +227,7 @@ body {
         <div class="kpi ok">
           <div class="kpi-cap">가장 안정적</div>
           <div class="kpi-val">${esc(mostStable.industry)}</div>
-          <div class="kpi-sub">폐점률 ${mostStable.avg_close_rate}%</div>
+          <div class="kpi-sub">운영 지속률 ${(100-mostStable.avg_close_rate).toFixed(1)}%</div>
         </div>
         <div class="kpi warn">
           <div class="kpi-cap">가장 높은 매출</div>
@@ -241,11 +241,11 @@ body {
         </div>
       </div>
 
-      <div class="sample-note">📊 공정거래위원회 정보공개서 <b>2025년 기준</b> · 6개 대분류로 집계. 세부 브랜드는 '브랜드 찾기'에서 확인하세요.</div>
+      <div class="sample-note">📊 공정거래위원회 정보공개서 <b>2025년 기준</b> · 6개 대분류로 집계. 운영 지속률(=100−폐점률)은 신생·소규모 브랜드에서 왜곡될 수 있어 참고용이며, 세부 브랜드는 '브랜드 찾기'에서 확인하세요.</div>
 
       <div class="section">
-        <h2>점포당 매출 vs 폐점률</h2>
-        <div class="sec-sub">막대=점포당 연매출(억), 점=폐점률(%). 오른쪽 아래일수록 수익 높고 안정적</div>
+        <h2>점포당 매출 vs 운영 지속률</h2>
+        <div class="sec-sub">막대=점포당 연매출(억), 점=운영 지속률(%). 오른쪽 위일수록 수익 높고 안정적</div>
         <div class="chart-box"><canvas id="barChart"></canvas></div>
       </div>
 
@@ -257,7 +257,7 @@ body {
 
       <div class="section">
         <h2>업종별 상세</h2>
-        <div class="sec-sub">폐점률 낮은(안정적인) 순</div>
+        <div class="sec-sub">운영 지속률 높은(안정적인) 순</div>
         <div class="ind-list">${indCards()}</div>
       </div>
     `;
@@ -268,7 +268,8 @@ body {
   function indCards(){
     const sorted=[...trends].sort((a,b)=>a.avg_close_rate-b.avg_close_rate);
     return sorted.map((t,i)=>{
-      const closeGood = t.avg_close_rate < 4;
+      const sustain = (100 - t.avg_close_rate).toFixed(1);
+      const sustainHigh = +sustain >= 90;
       return `
       <div class="ind-card">
         <div class="ind-head">
@@ -277,7 +278,7 @@ body {
         </div>
         <div class="ind-metrics">
           <div class="ind-metric"><span class="m-k">브랜드 수</span><span class="m-v">${t.brand_count.toLocaleString()}개</span></div>
-          <div class="ind-metric"><span class="m-k">폐점률</span><span class="m-v ${closeGood?'good':'bad'}">${t.avg_close_rate}%</span></div>
+          <div class="ind-metric"><span class="m-k">운영 지속률</span><span class="m-v ${sustainHigh?'good':''}">${sustain}%</span></div>
           <div class="ind-metric"><span class="m-k">점포당 매출</span><span class="m-v">연 ${(t.avg_store_sales/1e8).toFixed(1)}억</span></div>
           <div class="ind-metric"><span class="m-k">브랜드당 가맹점</span><span class="m-v">${t.avg_store_count.toLocaleString()}개</span></div>
         </div>
@@ -302,15 +303,15 @@ body {
     const c = themeColors();
     const labels = trends.map(t=>t.industry);
 
-    // 막대(점포당 매출, 억) + 선(폐점률) 콤보
+    // 막대(점포당 매출, 억) + 선(운영 지속률) 콤보
     barChart = new Chart($('#barChart'), {
       data:{
         labels,
         datasets:[
           { type:'bar', label:'점포당 연매출(억)', data:trends.map(t=>+(t.avg_store_sales/1e8).toFixed(1)),
             backgroundColor:c.accent+'cc', borderRadius:6, yAxisID:'y', order:2 },
-          { type:'line', label:'폐점률(%)', data:trends.map(t=>t.avg_close_rate),
-            borderColor:c.warn, backgroundColor:c.warn, tension:.3, yAxisID:'y1', order:1,
+          { type:'line', label:'운영 지속률(%)', data:trends.map(t=>+(100-t.avg_close_rate).toFixed(1)),
+            borderColor:c.ok, backgroundColor:c.ok, tension:.3, yAxisID:'y1', order:1,
             pointRadius:5, pointHoverRadius:7 }
         ]
       },
@@ -320,7 +321,7 @@ body {
         scales:{
           x:{ ticks:{ color:c.text2, font:{family:'Pretendard'} }, grid:{ display:false } },
           y:{ position:'left', ticks:{ color:c.text3, font:{family:'Pretendard'} }, grid:{ color:c.border }, title:{display:true,text:'점포당 매출(억)',color:c.text3,font:{family:'Pretendard'}} },
-          y1:{ position:'right', ticks:{ color:c.warn, font:{family:'Pretendard'} }, grid:{ display:false }, title:{display:true,text:'폐점률(%)',color:c.warn,font:{family:'Pretendard'}} }
+          y1:{ position:'right', min:0, max:100, ticks:{ color:c.ok, font:{family:'Pretendard'} }, grid:{ display:false }, title:{display:true,text:'운영 지속률(%)',color:c.ok,font:{family:'Pretendard'}} }
         }
       }
     });
@@ -328,7 +329,6 @@ body {
     // 레이더(종합) — 지표 100점 환산
     const maxSales = Math.max(...trends.map(t=>t.avg_store_sales));
     const maxCount = Math.max(...trends.map(t=>t.avg_store_count));
-    const maxClose = Math.max(...trends.map(t=>t.avg_close_rate));
     const palette = [c.accent, c.warn, c.ok, '#a15fd0', '#d0705f', '#5f9dd0'];
     radarChart = new Chart($('#radarChart'), {
       type:'radar',
@@ -337,7 +337,7 @@ body {
         datasets: trends.map((t,i)=>({
           label:t.industry,
           data:[
-            Math.round((1 - t.avg_close_rate/maxClose)*100),        // 안정성(폐점률 역)
+            Math.round(100 - t.avg_close_rate),                     // 안정성(운영 지속률)
             Math.round(t.avg_store_sales/maxSales*100),             // 수익성
             Math.round(t.avg_store_count/maxCount*100),             // 규모(평균 가맹점)
             Math.round(t.brand_count/Math.max(...trends.map(x=>x.brand_count))*100)  // 브랜드 수(선택폭)
