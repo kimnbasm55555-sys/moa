@@ -418,6 +418,11 @@ body {
     }
   } catch(e) { console.warn("Supabase 미연결(값 입력 전):", e); }
 
+  /* 로그인한 창업자 코드 (조건 저장 시 owner_code로 사용).
+     미로그인 시 null → 저장은 되지만 '내 제안' 매칭 불가. 배포 시 로그인 유도 권장. */
+  const MOA_USER = (()=>{ try { return JSON.parse(sessionStorage.getItem('moa_user')||'null'); } catch(e){ return null; } })();
+  const OWNER_CODE = (MOA_USER && MOA_USER.user_code) || null;
+
   /* ---- 테마 토글 ---- */
   const themeBtn = $('#themeBtn'), themeIcon = $('#themeIcon');
   const sunIcon = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
@@ -508,6 +513,7 @@ body {
       nextBtn.disabled = true;
       nextBtn.textContent = '등록 중...';
       const { error } = await sb.from('auction_requests').insert([{
+        owner_code: OWNER_CODE,
         startup_type: data.startupType,
         budget: data.budget,
         funding: data.funding,
