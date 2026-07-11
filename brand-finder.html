@@ -120,8 +120,8 @@ body {
 
 /* 하단 고정 바 */
 .bottombar {
-  position:fixed; bottom:0; left:0; right:0; z-index:30;
-  padding:var(--sp-4) var(--sp-5) max(var(--sp-4),env(safe-area-inset-bottom));
+  position:fixed; bottom:64px; left:0; right:0; z-index:30;
+  padding:var(--sp-4) var(--sp-5);
   background:color-mix(in srgb,var(--bg) 90%,transparent); backdrop-filter:blur(12px);
   border-top:1px solid var(--border);
 }
@@ -157,6 +157,7 @@ body {
   padding:var(--sp-3) var(--sp-4); line-height:1.5;
 }
 </style>
+<style>body{padding-bottom:140px!important;}</style>
 </head>
 <body data-theme="light">
 
@@ -465,14 +466,16 @@ body {
   }
 
   $('#skipBtn').addEventListener('click',()=>{
-    // 실제로는 다음 단계로 이동 (브랜드 미선택 상태 저장)
-    alert('브랜드 없이 진행합니다. (실제 앱에서는 다음 단계로 이동)');
+    // 브랜드 미선택으로 다음 단계(조건등록)로 이동
+    sessionStorage.removeItem('moa_wish_brand');
+    location.href = 'index.html';
   });
   $('#nextBtn').addEventListener('click',()=>{
     if (selectedId){
       const b=allBrands.find(x=>x.id===selectedId);
-      // 실제로는 auction_requests 에 wish_brand 로 저장
-      alert(`선택한 브랜드: ${b.brand_name}\n(실제 앱에서는 이 값을 조건에 저장하고 다음 단계로 이동)`);
+      // 관심 브랜드를 세션에 저장 → 조건등록 화면에서 활용
+      sessionStorage.setItem('moa_wish_brand', JSON.stringify({ id:b.id, name:b.brand_name, industry:b.industry }));
+      location.href = 'index.html';
     } else {
       alert('브랜드를 선택하거나 건너뛰기를 눌러주세요.');
     }
@@ -489,5 +492,6 @@ body {
   loadBrands();
 })();
 </script>
+  <script src="moa-nav.js"></script>
 </body>
 </html>
