@@ -294,10 +294,15 @@ body {
 
   /* ============================================================
      현재 로그인한 창업자 식별자 (owner_code)
-     ▼ 지금은 개발 단계라 하드코딩. 실제로는 로그인 세션에서 주입.
-       auction_requests 에 저장된 owner_code 와 같아야 매칭됨.
+     로그인 세션(sessionStorage 'moa_user')의 user_code 사용.
+     미로그인 시 로그인 화면으로 이동. (개발용 fallback: demo_owner)
      ============================================================ */
-  const OWNER_CODE = window.CURRENT_OWNER_CODE || "demo_owner";
+  const MOA_USER = (()=>{ try { return JSON.parse(sessionStorage.getItem('moa_user')||'null'); } catch(e){ return null; } })();
+  // ⚠️ 배포 전: 아래 3줄 주석 해제 → 미로그인 시 로그인 화면으로 강제 이동
+  // if (!MOA_USER || !MOA_USER.user_code) {
+  //   location.href = 'login.html';
+  // }
+  const OWNER_CODE = (MOA_USER && MOA_USER.user_code) || "demo_owner";  // fallback: 개발 테스트용
 
   const $ = s => document.querySelector(s);
   const listEl = $('#list');
