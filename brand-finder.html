@@ -101,6 +101,7 @@ body {
 .b-cost { margin-top:var(--sp-4); font-size:var(--fs-sm); }
 .b-cost .cost-label { color:var(--text-3); }
 .b-cost .cost-val { font-weight:700; color:var(--text); }
+.b-cost .cost-hint { display:block; font-size:11px; color:var(--text-3); font-weight:400; margin-top:3px; line-height:1.4; }
 
 /* 지표 라인 */
 .metrics { display:flex; gap:var(--sp-4); margin-top:var(--sp-3); flex-wrap:wrap; }
@@ -195,7 +196,7 @@ body {
 </div>
 
 <div class="sample-note">
-  <div class="note">📊 공정거래위원회 정보공개서 <b>2025년 기준</b> 데이터예요. 프랜차이즈 정보는 연 1회 신고·공개되므로, 실제 현재 운영 상황(폐업·조건 변경 등)은 담당자와의 상담에서 확인하세요. 운영 지속률은 신생·소규모 브랜드에서 왜곡될 수 있어 참고용입니다.</div>
+  <div class="note">📊 가맹점 수·매출·운영 지속률은 <b>공정거래위원회 2025년 기준</b> · 창업비용은 <b>대한상공회의소 프랜차이즈 산업 실태조사</b> 등 업종 평균 기반의 참고 추정치예요. 브랜드·상권·집기(신품/중고)에 따라 크게 달라지므로, 실제 금액과 현재 운영 상황은 담당자 상담에서 확인하세요. 운영 지속률은 신생·소규모 브랜드에서 왜곡될 수 있어 참고용입니다.</div>
 </div>
 
 <div class="list" id="list"><div class="loading">불러오는 중…</div></div>
@@ -244,6 +245,27 @@ body {
     { key:'판매기타', label:'🛍 판매·기타', inds:['편의점','의류 / 패션','종합소매점','농수산물','기타도소매','기타 서비스','(건강)식품','부동산 중개','운송','배달','세탁'] },
   ];
   let selCategory = null;    // 선택된 대분류 key
+
+  /* 세부 업종별 창업비용 범위 (만원 단위)
+     근거: 대한상공회의소 2023 프랜차이즈 산업 실태조사(2024 발표) 평균값 중심
+     + 업계 편차 반영. 하한=소형·중고집기 / 상한=대형·신품·주요상권. 참고 추정치. */
+  const COST_RANGE = {
+    '제과제빵':[15000,35000], '안경':[13000,30000],
+    '피자':[8000,22000], '한식':[8000,22000], '서양식':[8000,22000],
+    '커피':[5000,20000], '음료 (커피 외)':[4000,15000],
+    '이미용':[6000,18000], '분식':[5000,15000], '편의점':[5000,15000],
+    '아이스크림/빙수':[4000,12000], '치킨':[4000,15000], '주점':[6000,18000],
+    '중식':[7000,18000], '일식':[7000,20000], '패스트푸드':[6000,16000],
+    '기타 외식':[6000,18000], '기타 외국식':[6000,18000],
+    '기타 교육':[5000,15000], '교육 (외국어)':[5000,15000], '교육 (교과)':[5000,15000],
+    '유아 관련 (교육 외)':[5000,15000], '유아관련':[5000,15000],
+    '자동차 관련':[5000,20000], '스포츠 관련':[6000,20000], '세탁':[5000,15000],
+    '오락':[6000,25000], 'PC방':[10000,25000], '숙박':[10000,40000],
+    '반려동물 관련':[5000,18000], '화장품':[5000,15000], '약국':[8000,25000],
+    '의류 / 패션':[5000,18000], '종합소매점':[5000,20000], '농수산물':[4000,15000],
+    '기타도소매':[4000,15000], '기타 서비스':[5000,18000], '(건강)식품':[5000,15000],
+  };
+  function costRange(industry){ return COST_RANGE[industry] || [5000,15000]; }
 
   /* 데이터 로드 */
   async function loadBrands(){
@@ -334,17 +356,16 @@ body {
       if (selIndustry && b.industry !== selIndustry) return false;
       if (catInds && !catInds.has(b.industry)) return false;
       if (selBudget){
-        // 창업비용 정보가 있는 브랜드만 예산으로 거름.
-        // 정보공개서(창업비용) 미연동 브랜드는 NULL이므로 필터에서 제외하지 않고 통과시킴.
-        const hasMin = b.startup_cost_min != null;
-        const hasMax = b.startup_cost_max != null;
-        if (hasMin || hasMax){
-          const lo = hasMin ? b.startup_cost_min : 0;
-          const hi = hasMax ? b.startup_cost_max : 999999;
-          // 예산 범위와 창업비용 범위가 겹치면 통과
-          if (hi < selBudget.min || lo > selBudget.max) return false;
+        // 개별 창업비용 데이터 있으면 그것으로, 없으면 업종 평균 범위로 필터.
+        // 예산 범위와 창업비용 범위가 겹치면 통과.
+        let lo, hi;
+        if (b.startup_cost_min != null || b.startup_cost_max != null){
+          lo = b.startup_cost_min != null ? b.startup_cost_min : 0;
+          hi = b.startup_cost_max != null ? b.startup_cost_max : 999999;
+        } else {
+          [lo, hi] = costRange(b.industry);  // 업종 평균 추정 범위
         }
-        // (창업비용 정보 없음 → 통과. 카드에 '창업비용 정보 준비중' 표기)
+        if (hi < selBudget.min || lo > selBudget.max) return false;
       }
       return true;
     });
@@ -377,11 +398,16 @@ body {
   }
 
   function cardHtml(b){
-    // 창업비용: 값이 있으면 범위 표시, 없으면 '정보 준비중'
-    const hasCost = b.startup_cost_min != null || b.startup_cost_max != null;
-    const costHtml = hasCost
-      ? `<span class="cost-label">예상 창업비용 </span><span class="cost-val">${fmtMan(b.startup_cost_min)}~${fmtMan(b.startup_cost_max)}</span>`
-      : `<span class="cost-label">창업비용 </span><span class="cost-val" style="color:var(--text-3);font-weight:600">정보 준비중</span>`;
+    // 창업비용: 개별 데이터(정보공개서) 있으면 우선, 없으면 업종 평균 범위 사용
+    const hasIndividual = b.startup_cost_min != null || b.startup_cost_max != null;
+    let costHtml;
+    if (hasIndividual){
+      costHtml = `<span class="cost-label">예상 창업비용 </span><span class="cost-val">${fmtMan(b.startup_cost_min)}~${fmtMan(b.startup_cost_max)}</span>`;
+    } else {
+      const [lo,hi] = costRange(b.industry);
+      costHtml = `<span class="cost-label">예상 창업비용 </span><span class="cost-val">약 ${fmtMan(lo)}~${fmtMan(hi)}</span>`
+        + `<span class="cost-hint">신품 기준 · 중고 집기 활용 시 절감 가능 · 정확한 금액은 상담에서</span>`;
+    }
     const salesEok = b.avg_sales ? (b.avg_sales/100000000).toFixed(1) : null;
     // 운영 지속률 = 100 - 폐점률 (긍정 프레임). 색은 중립 유지(경고색 미사용)
     const sustainRate = b.close_rate!=null ? (100 - b.close_rate).toFixed(1) : null;
