@@ -121,7 +121,7 @@ body {
 
 /* ===== 하단 CTA ===== */
 .bottombar {
-  position:fixed; bottom:0; left:0; right:0; z-index:30;
+  position:fixed; bottom:64px; left:0; right:0; z-index:30;
   padding:var(--sp-4) var(--sp-5) max(var(--sp-4),env(safe-area-inset-bottom));
   background:color-mix(in srgb,var(--bg) 90%,transparent); backdrop-filter:blur(12px); border-top:1px solid var(--border);
 }
@@ -141,6 +141,7 @@ body {
 .viewer-close { position:absolute; top:16px; right:16px; width:44px; height:44px; border-radius:50%;
   background:rgba(255,255,255,.15); border:none; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
 </style>
+<style>body{padding-bottom:140px!important;}</style>
 </head>
 <body data-theme="light">
 
@@ -364,5 +365,6 @@ body {
   load();
 })();
 </script>
+  <script src="moa-nav.js"></script>
 </body>
 </html>
