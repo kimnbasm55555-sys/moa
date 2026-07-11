@@ -196,7 +196,7 @@ body {
 </div>
 
 <div class="sample-note">
-  <div class="note">📊 가맹점 수·매출·운영 지속률은 <b>공정거래위원회 2025년 기준</b> · 창업비용은 <b>대한상공회의소 프랜차이즈 산업 실태조사</b> 등 업종 평균 기반의 참고 추정치예요. 브랜드·상권·집기(신품/중고)에 따라 크게 달라지므로, 실제 금액과 현재 운영 상황은 담당자 상담에서 확인하세요. 운영 지속률은 신생·소규모 브랜드에서 왜곡될 수 있어 참고용입니다.</div>
+  <div class="note">📊 가맹점 수·매출·운영 지속률은 <b>공정거래위원회 2025년 기준</b> · 창업비용은 <b>대한상공회의소 프랜차이즈 산업 실태조사(2023년)</b> 기반 업종 평균 참고 추정치로, 이후 물가·임대료 변동은 반영되지 않았을 수 있어요. 브랜드·상권·집기(신품/중고)에 따라 크게 달라지니 실제 금액과 현재 운영 상황은 담당자 상담에서 확인하세요. 운영 지속률은 신생·소규모 브랜드에서 왜곡될 수 있어 참고용입니다.</div>
 </div>
 
 <div class="list" id="list"><div class="loading">불러오는 중…</div></div>
@@ -406,7 +406,7 @@ body {
     } else {
       const [lo,hi] = costRange(b.industry);
       costHtml = `<span class="cost-label">예상 창업비용 </span><span class="cost-val">약 ${fmtMan(lo)}~${fmtMan(hi)}</span>`
-        + `<span class="cost-hint">신품 기준 · 중고 집기 활용 시 절감 가능 · 정확한 금액은 상담에서</span>`;
+        + `<span class="cost-hint">업종 평균(2023년 조사) · 중고 집기 활용 시 절감 가능 · 정확한 금액은 상담에서</span>`;
     }
     const salesEok = b.avg_sales ? (b.avg_sales/100000000).toFixed(1) : null;
     // 운영 지속률 = 100 - 폐점률 (긍정 프레임). 색은 중립 유지(경고색 미사용)
