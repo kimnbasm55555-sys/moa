@@ -1,0 +1,117 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Pretendard',sans-serif;-webkit-font-smoothing:antialiased;}
+body{background:#dde1e8;padding:20px;display:flex;justify-content:center;}
+.phone{width:390px;background:#f4f6fb;border-radius:36px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.2);position:relative;height:844px;}
+.status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:13px;font-weight:600;color:#191f28;}
+.scroll{height:726px;overflow-y:auto;padding-bottom:20px;}
+.scroll::-webkit-scrollbar{display:none;}
+svg{display:block;}
+
+.hd{padding:8px 20px 12px;}
+.hd .title{font-size:20px;font-weight:800;color:#191f28;letter-spacing:-.02em;}
+
+/* 탭 전환 */
+.seg{display:flex;gap:8px;padding:0 20px 16px;}
+.seg-btn{flex:1;text-align:center;padding:10px;border-radius:12px;font-size:14px;font-weight:700;background:#fff;color:#8b95a1;border:1px solid #eef1f6;position:relative;}
+.seg-btn.on{background:#3182f6;color:#fff;border-color:#3182f6;}
+.seg-btn .cnt{position:absolute;top:6px;right:14px;font-size:10px;background:#ff5247;color:#fff;min-width:16px;height:16px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;font-weight:700;}
+
+/* 예정 미팅 카드 */
+.up-meeting{margin:0 16px 18px;background:linear-gradient(135deg,#3182f6,#4d94ff);border-radius:16px;padding:16px 18px;color:#fff;}
+.um-label{font-size:12px;font-weight:700;opacity:.9;display:flex;align-items:center;gap:5px;margin-bottom:8px;}
+.um-title{font-size:16px;font-weight:800;}
+.um-when{font-size:13px;opacity:.95;margin-top:4px;display:flex;align-items:center;gap:5px;}
+.um-actions{display:flex;gap:8px;margin-top:14px;}
+.um-btn{flex:1;text-align:center;padding:9px;border-radius:10px;font-size:13px;font-weight:700;background:rgba(255,255,255,.2);color:#fff;}
+.um-btn.solid{background:#fff;color:#3182f6;}
+
+/* 대화 리스트 */
+.list-label{font-size:13px;font-weight:700;color:#8b95a1;padding:0 20px;margin-bottom:8px;}
+.chat{display:flex;gap:12px;padding:14px 20px;background:#fff;margin:0 16px 8px;border-radius:14px;align-items:center;}
+.chat-av{width:48px;height:48px;border-radius:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:15px;position:relative;}
+.chat-type{position:absolute;bottom:-3px;right:-3px;width:20px;height:20px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;}
+.chat-type svg{width:10px;height:10px;color:#fff;}
+.chat-info{flex:1;min-width:0;}
+.chat-top{display:flex;align-items:center;justify-content:space-between;}
+.chat-nm{font-size:15px;font-weight:800;color:#191f28;}
+.chat-time{font-size:11px;color:#adb5bd;}
+.chat-msg{font-size:13px;color:#8b95a1;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;}
+.chat-tag{font-size:10px;color:#3182f6;background:#e8f2ff;padding:2px 7px;border-radius:6px;font-weight:700;margin-top:5px;display:inline-block;}
+.chat-tag.transfer{color:#e8590c;background:#fff4ec;}
+.chat-tag.expert{color:#12b886;background:#e7f6ec;}
+.chat-unread{width:20px;height:20px;border-radius:10px;background:#ff5247;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+.tabbar{position:absolute;bottom:0;left:0;right:0;height:74px;background:#fff;border-top:1px solid #eef1f6;display:flex;padding:10px 2px 0;}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;font-weight:600;color:#adb5bd;position:relative;}
+.tab.on{color:#3182f6;}
+.tab svg{width:22px;height:22px;}
+.tab .dot{position:absolute;top:6px;right:26px;width:8px;height:8px;border-radius:50%;background:#ff5247;}
+
+/* === 반응형: 모바일 꽉 참 + PC 폰 프레임 === */
+@media (max-width:599px){
+  body{background:#f4f6fb !important;padding:0 !important;}
+  .phone{width:100% !important;max-width:100% !important;height:100vh !important;height:100dvh !important;border-radius:0 !important;box-shadow:none !important;}
+}
+</style></head>
+<body>
+<div class="phone">
+  <div class="status"><span>11:55</span><span>&#128246; &#128267;</span></div>
+  <div class="scroll">
+    <div class="hd"><div class="title">톡·미팅</div></div>
+    <div class="seg">
+      <div class="seg-btn on">상담 <span class="cnt">3</span></div>
+      <div class="seg-btn">미팅 <span class="cnt">1</span></div>
+    </div>
+
+    <div class="up-meeting">
+      <div class="um-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>다가오는 미팅</div>
+      <div class="um-title">메가커피 창업 상담 미팅</div>
+      <div class="um-when"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>내일 (화) 오후 2:00 · 강남 본사</div>
+      <div class="um-actions"><div class="um-btn">일정 변경</div><div class="um-btn solid">상세 보기</div></div>
+    </div>
+
+    <div class="list-label">진행 중인 상담</div>
+
+    <div class="chat">
+      <div class="chat-av" style="background:#3182f6">메<span class="chat-type" style="background:#3182f6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></span></div>
+      <div class="chat-info">
+        <div class="chat-top"><span class="chat-nm">메가커피 지원팀</span><span class="chat-time">방금</span></div>
+        <div class="chat-msg">네, 미팅 일정 확정되었습니다. 내일 뵙겠습니다!</div>
+        <span class="chat-tag">브랜드 상담</span>
+      </div>
+      <div class="chat-unread">2</div>
+    </div>
+
+    <div class="chat">
+      <div class="chat-av" style="background:#8d6e63">역<span class="chat-type" style="background:#e8590c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 16l-4-4 4-4M3 12h13M17 8l4 4-4 4"/></svg></span></div>
+      <div class="chat-info">
+        <div class="chat-top"><span class="chat-nm">역전할머니맥주 판매자</span><span class="chat-time">1시간 전</span></div>
+        <div class="chat-msg">매장 방문은 평일 오후에 가능하십니다.</div>
+        <span class="chat-tag transfer">양도양수</span>
+      </div>
+      <div class="chat-unread">1</div>
+    </div>
+
+    <div class="chat">
+      <div class="chat-av" style="background:#12b886">김<span class="chat-type" style="background:#12b886"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></span></div>
+      <div class="chat-info">
+        <div class="chat-top"><span class="chat-nm">김세무사 (세무사)</span><span class="chat-time">어제</span></div>
+        <div class="chat-msg">사업자 등록 관련해서 안내드리겠습니다.</div>
+        <span class="chat-tag expert">전문가</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="cursor:pointer" onclick="location.href='home-mockup.html'" class="tabbar">
+    <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg>홈</div>
+    <div style="cursor:pointer" onclick="location.href='transfer-list.html'" class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16l-4-4 4-4M3 12h13M17 8l4 4-4 4M21 12H8"/></svg>양도양수</div>
+    <div style="cursor:pointer" onclick="location.href='expert.html'" class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>전문가</div>
+    <div style="cursor:pointer" onclick="location.href='home-mockup.html'" class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>내 창업</div>
+    <div class="tab on"><span class="dot"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>톡·미팅</div>
+    <div style="cursor:pointer" onclick="location.href='myinfo.html'" class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>내 정보</div>
+  </div>
+</div>
+</body></html>

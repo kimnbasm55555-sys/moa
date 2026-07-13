@@ -1,0 +1,91 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Pretendard',sans-serif;-webkit-font-smoothing:antialiased;}
+body{background:#dde1e8;padding:20px;display:flex;justify-content:center;}
+.phone{width:390px;background:#f4f6fb;border-radius:36px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.2);position:relative;height:844px;}
+.status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:13px;font-weight:600;color:#191f28;}
+.scroll{height:800px;overflow-y:auto;padding:0 24px 24px;}
+.scroll::-webkit-scrollbar{display:none;}
+
+.prog{margin:8px 0 24px;}
+.prog-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.prog-label{font-size:13px;font-weight:700;color:#3182f6;}
+.prog-step{font-size:13px;color:#8b95a1;font-weight:600;}
+.prog-bar{height:5px;background:#eef1f6;border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;width:83%;background:#3182f6;border-radius:3px;}
+
+.q-label{font-size:13px;font-weight:700;color:#3182f6;margin-bottom:6px;}
+h2{font-size:23px;font-weight:800;color:#191f28;letter-spacing:-.02em;line-height:1.35;margin-bottom:8px;}
+.q-sub{font-size:14px;color:#8b95a1;margin-bottom:24px;line-height:1.5;}
+
+.grp-label{font-size:13px;font-weight:700;color:#4e5968;margin:20px 0 10px;display:flex;align-items:center;gap:6px;}
+.grp-label svg{width:16px;height:16px;color:#3182f6;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{font-size:14px;font-weight:600;padding:11px 16px;border-radius:12px;background:#fff;color:#4e5968;border:1.5px solid #eef1f6;cursor:pointer;display:flex;align-items:center;gap:6px;}
+.chip.on{background:#e8f2ff;border-color:#3182f6;color:#3182f6;}
+.chip .ck{width:16px;height:16px;border-radius:50%;border:1.5px solid #cbd2da;display:flex;align-items:center;justify-content:center;}
+.chip.on .ck{background:#3182f6;border-color:#3182f6;}
+
+.skip-note{margin-top:20px;font-size:12px;color:#adb5bd;text-align:center;line-height:1.5;}
+
+.footer{position:absolute;bottom:0;left:0;right:0;padding:16px 24px 28px;background:linear-gradient(transparent,#f4f6fb 30%);display:flex;gap:10px;}
+.btn-ghost{width:56px;border:1.5px solid #eef1f6;background:#fff;border-radius:14px;color:#8b95a1;font-size:20px;font-family:inherit;}
+.btn{flex:1;background:#3182f6;color:#fff;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:800;font-family:inherit;}
+
+/* === 반응형: 모바일 꽉 참 + PC 폰 프레임 === */
+@media (max-width:599px){
+  body{background:#f4f6fb !important;padding:0 !important;}
+  .phone{width:100% !important;max-width:100% !important;height:100vh !important;height:100dvh !important;border-radius:0 !important;box-shadow:none !important;}
+}
+</style></head>
+<body>
+<div class="phone">
+  <div class="status"><span>11:55</span><span>&#128246; &#128267;</span></div>
+  <div class="scroll">
+    <div class="prog">
+      <div class="prog-meta"><span class="prog-label">우대 조건</span><span class="prog-step">5 / 6</span></div>
+      <div class="prog-bar"><div class="prog-fill"></div></div>
+    </div>
+
+    <div class="q-label">우대 조건 (선택)</div>
+    <h2>원하는 혜택이 있으신가요?</h2>
+    <div class="q-sub">고르신 혜택을 제공하는 브랜드를 먼저 보여드려요. 없어도 괜찮아요.</div>
+
+    <div class="grp-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.8 9.5a2.5 2.5 0 00-2.3-1.5h-1a2 2 0 000 4h1a2 2 0 010 4h-1a2.5 2.5 0 01-2.3-1.5M12 6v1.5M12 16.5V18"/></svg> 비용 면제·할인</div>
+    <div class="chips">
+      <div class="chip on"><span class="ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>가맹비 면제·할인</div>
+      <div class="chip on"><span class="ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>교육비 면제·할인</div>
+      <div class="chip"><span class="ck"></span>로열티 면제·할인</div>
+      <div class="chip"><span class="ck"></span>물류보증금 면제·할인</div>
+      <div class="chip"><span class="ck"></span>감리비 면제·할인</div>
+    </div>
+
+    <div class="grp-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v8a1 1 0 01-1 1H5a1 1 0 01-1-1v-8M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg> 창업 지원 혜택</div>
+    <div class="chips">
+      <div class="chip on"><span class="ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>간판 지원</div>
+      <div class="chip"><span class="ck"></span>인테리어 지원</div>
+      <div class="chip"><span class="ck"></span>주방집기 지원</div>
+    </div>
+
+    <div class="grp-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16M8 16H3v5"/></svg> 업종 전환 우대</div>
+    <div class="chips">
+      <div class="chip on"><span class="ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>업종 전환 지원금</div>
+      <div class="chip"><span class="ck"></span>기존 설비 인수 가능</div>
+      <div class="chip"><span class="ck"></span>전환 창업 가맹비 우대</div>
+    </div>
+
+    <div class="grp-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.7l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.7l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.3 7L12 12l8.7-5M12 22V12"/></svg> 기타</div>
+    <div class="chips">
+      <div class="chip"><span class="ck"></span>중고품 구매 가능</div>
+    </div>
+
+    <div class="skip-note">해당 혜택이 없어도 다른 조건으로 매칭해드려요</div>
+  </div>
+  <div class="footer">
+    <button class="btn-ghost">‹</button>
+    <button class="btn">다음</button>
+  </div>
+</div>
+</body></html>

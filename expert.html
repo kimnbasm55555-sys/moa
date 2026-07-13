@@ -1,0 +1,152 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Pretendard',sans-serif;-webkit-font-smoothing:antialiased;}
+body{background:#dde1e8;padding:20px;display:flex;justify-content:center;}
+.phone{width:390px;background:#f4f6fb;border-radius:36px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.2);position:relative;height:844px;}
+.status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:13px;font-weight:600;color:#191f28;}
+.scroll{height:726px;overflow-y:auto;padding-bottom:20px;}
+.scroll::-webkit-scrollbar{display:none;}
+svg{display:block;}
+
+.hd{padding:8px 20px 6px;}
+.hd .title{font-size:20px;font-weight:800;color:#191f28;letter-spacing:-.02em;}
+.hd .sub{font-size:13px;color:#8b95a1;margin-top:3px;}
+
+/* 직군 카테고리 */
+.cats{display:flex;gap:8px;padding:14px 16px 16px;overflow-x:auto;}
+.cats::-webkit-scrollbar{display:none;}
+.cat{white-space:nowrap;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 14px;border-radius:14px;background:#fff;border:1px solid #eef1f6;min-width:72px;}
+.cat.on{background:#e8f2ff;border-color:#3182f6;}
+.cat .ci{width:28px;height:28px;color:#4e5968;}
+.cat.on .ci{color:#3182f6;}
+.cat .cn{font-size:12px;font-weight:700;color:#4e5968;}
+.cat.on .cn{color:#3182f6;}
+
+/* 안내 배너 */
+.notice{margin:0 16px 16px;padding:12px 14px;background:#e7f6ec;border-radius:12px;font-size:12px;color:#0ca678;display:flex;gap:8px;align-items:center;}
+.notice svg{flex-shrink:0;}
+
+/* 전문가 카드 */
+.exp{background:#fff;margin:0 16px 12px;border-radius:16px;padding:16px;box-shadow:0 2px 10px rgba(60,80,140,.05);}
+.exp-top{display:flex;gap:13px;}
+.exp-av{width:56px;height:56px;border-radius:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:18px;}
+.exp-info{flex:1;min-width:0;}
+.exp-nm{font-size:16px;font-weight:800;color:#191f28;display:flex;align-items:center;gap:6px;}
+.exp-badge{font-size:10px;color:#12b886;background:#e7f6ec;padding:2px 7px;border-radius:6px;font-weight:700;}
+.exp-role{font-size:13px;color:#8b95a1;margin-top:2px;}
+.exp-fair{font-size:10px;color:#cbd2da;margin-top:4px;display:flex;align-items:center;gap:3px;}
+.exp-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}
+.exp-tag{font-size:11px;font-weight:600;padding:4px 9px;border-radius:7px;background:#f1f3f7;color:#4e5968;}
+.exp-foot{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:13px;border-top:1px solid #f4f6fb;}
+.exp-meta{font-size:12px;color:#8b95a1;}
+.exp-meta b{color:#191f28;font-weight:700;}
+.exp-btn{background:#3182f6;color:#fff;border:none;border-radius:10px;padding:9px 18px;font-size:13px;font-weight:700;font-family:inherit;}
+
+.tabbar{position:absolute;bottom:0;left:0;right:0;height:74px;background:#fff;border-top:1px solid #eef1f6;display:flex;padding:10px 2px 0;}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;font-weight:600;color:#adb5bd;}
+.tab.on{color:#3182f6;}
+.tab svg{width:22px;height:22px;}
+
+/* === 반응형: 모바일 꽉 참 + PC 폰 프레임 === */
+@media (max-width:599px){
+  body{background:#f4f6fb !important;padding:0 !important;}
+  .phone{width:100% !important;max-width:100% !important;height:100vh !important;height:100dvh !important;border-radius:0 !important;box-shadow:none !important;}
+}
+</style></head>
+<body>
+<div class="phone">
+  <div class="status"><span>11:55</span><span>&#128246; &#128267;</span></div>
+  <div class="scroll">
+    <div class="hd">
+      <div class="title">전문가</div>
+      <div class="sub">창업에 필요한 전문가를 만나보세요</div>
+    </div>
+
+    <div class="cats">
+      <div class="cat on">
+        <svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 15h6M9 11h2"/></svg>
+        <span class="cn">가맹거래사</span>
+      </div>
+      <div class="cat">
+        <svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/><path d="M9 9v.01M9 12v.01M9 15v.01"/></svg>
+        <span class="cn">공인중개사</span>
+      </div>
+      <div class="cat">
+        <svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <span class="cn">세무사</span>
+      </div>
+      <div class="cat">
+        <svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
+        <span class="cn">노무사</span>
+      </div>
+      <div class="cat">
+        <svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v6c0 4-3.5 7-8 8-4.5-1-8-4-8-8V7z"/></svg>
+        <span class="cn">변호사</span>
+      </div>
+      <div class="cat">
+        <svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 6 .5-4.5 4 1.5 6L12 15l-6 3.5 1.5-6L3 8.5 9 8z"/></svg>
+        <span class="cn">변리사</span>
+      </div>
+      <div class="cat">
+        <svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+        <span class="cn">법무사</span>
+      </div>
+    </div>
+
+    <div class="notice">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 7h20M4 7l4 8a4 4 0 01-8 0zM16 15l4-8 4 8a4 4 0 01-8 0z"/></svg>
+      모든 전문가는 공정하게 번갈아 노출됩니다
+    </div>
+
+    <div class="exp">
+      <div class="exp-top">
+        <div class="exp-av" style="background:#3182f6">박</div>
+        <div class="exp-info">
+          <div class="exp-nm">박가맹 <span class="exp-badge">인증</span></div>
+          <div class="exp-role">가맹거래사 · 12년 경력</div>
+          <div class="exp-fair"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 7h20M4 7l4 8a4 4 0 01-8 0zM16 15l4-8 4 8a4 4 0 01-8 0z"/></svg>공정노출</div>
+        </div>
+      </div>
+      <div class="exp-tags"><span class="exp-tag">정보공개서 검토</span><span class="exp-tag">가맹계약 상담</span><span class="exp-tag">분쟁 조정</span></div>
+      <div class="exp-foot"><span class="exp-meta">상담 <b>240건</b> · 후기 <b>4.9</b></span><button class="exp-btn">상담 신청</button></div>
+    </div>
+
+    <div class="exp">
+      <div class="exp-top">
+        <div class="exp-av" style="background:#12b886">이</div>
+        <div class="exp-info">
+          <div class="exp-nm">이거래 <span class="exp-badge">인증</span></div>
+          <div class="exp-role">가맹거래사 · 8년 경력</div>
+          <div class="exp-fair"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 7h20M4 7l4 8a4 4 0 01-8 0zM16 15l4-8 4 8a4 4 0 01-8 0z"/></svg>공정노출</div>
+        </div>
+      </div>
+      <div class="exp-tags"><span class="exp-tag">창업 적합성 검토</span><span class="exp-tag">계약서 분석</span></div>
+      <div class="exp-foot"><span class="exp-meta">상담 <b>156건</b> · 후기 <b>4.8</b></span><button class="exp-btn">상담 신청</button></div>
+    </div>
+
+    <div class="exp">
+      <div class="exp-top">
+        <div class="exp-av" style="background:#f76707">최</div>
+        <div class="exp-info">
+          <div class="exp-nm">최프차 <span class="exp-badge">인증</span></div>
+          <div class="exp-role">가맹거래사 · 15년 경력</div>
+          <div class="exp-fair"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 7h20M4 7l4 8a4 4 0 01-8 0zM16 15l4-8 4 8a4 4 0 01-8 0z"/></svg>공정노출</div>
+        </div>
+      </div>
+      <div class="exp-tags"><span class="exp-tag">정보공개서 검토</span><span class="exp-tag">위약금 상담</span><span class="exp-tag">본사 협상</span></div>
+      <div class="exp-foot"><span class="exp-meta">상담 <b>312건</b> · 후기 <b>5.0</b></span><button class="exp-btn">상담 신청</button></div>
+    </div>
+  </div>
+
+  <div style="cursor:pointer" onclick="location.href='home-mockup.html'" class="tabbar">
+    <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg>홈</div>
+    <div style="cursor:pointer" onclick="location.href='transfer-list.html'" class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16l-4-4 4-4M3 12h13M17 8l4 4-4 4M21 12H8"/></svg>양도양수</div>
+    <div class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>전문가</div>
+    <div style="cursor:pointer" onclick="location.href='home-mockup.html'" class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>내 창업</div>
+    <div style="cursor:pointer" onclick="location.href='talk-meeting.html'" class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>톡·미팅</div>
+    <div style="cursor:pointer" onclick="location.href='myinfo.html'" class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>내 정보</div>
+  </div>
+</div>
+</body></html>

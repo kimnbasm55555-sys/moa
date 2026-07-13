@@ -1,0 +1,148 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Pretendard',sans-serif;-webkit-font-smoothing:antialiased;}
+body{background:#dde1e8;padding:20px;display:flex;justify-content:center;}
+.phone{width:390px;background:#f4f6fb;border-radius:36px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.2);position:relative;height:844px;}
+.status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:13px;font-weight:600;color:#191f28;}
+.scroll{height:726px;overflow-y:auto;padding-bottom:20px;}
+.scroll::-webkit-scrollbar{display:none;}
+svg{display:block;}
+
+/* 헤더 */
+.hd{display:flex;align-items:center;justify-content:space-between;padding:8px 20px 14px;}
+.hd .title{font-size:20px;font-weight:800;color:#191f28;letter-spacing:-.02em;}
+.hd .reg{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:700;color:#3182f6;background:#e8f2ff;padding:8px 13px;border-radius:12px;}
+
+/* 필터 바 */
+.filter-bar{display:flex;gap:8px;padding:0 16px 12px;overflow-x:auto;}
+.filter-bar::-webkit-scrollbar{display:none;}
+.fchip{white-space:nowrap;display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;padding:8px 13px;border-radius:11px;background:#fff;color:#4e5968;border:1px solid #eef1f6;}
+.fchip.on{background:#3182f6;color:#fff;border-color:#3182f6;}
+.fchip svg{width:13px;height:13px;}
+
+/* 정렬 */
+.sortrow{display:flex;align-items:center;justify-content:space-between;padding:0 20px 12px;}
+.sortrow .cnt{font-size:12px;color:#8b95a1;}
+.sortrow .sort{font-size:12px;color:#4e5968;font-weight:600;display:flex;align-items:center;gap:3px;}
+
+/* 매물 카드 (당근식) */
+.item{background:#fff;margin:0 16px 12px;border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(60,80,140,.05);}
+.item-body{display:flex;gap:13px;padding:14px;}
+.item-photo{width:104px;height:104px;border-radius:12px;flex-shrink:0;position:relative;overflow:hidden;}
+.item-photo .cnt-badge{position:absolute;bottom:6px;right:6px;font-size:10px;color:#fff;background:rgba(0,0,0,.55);padding:2px 7px;border-radius:8px;font-weight:600;display:flex;align-items:center;gap:3px;}
+.item-info{flex:1;min-width:0;}
+.item-loc{font-size:12px;color:#8b95a1;display:flex;align-items:center;gap:3px;}
+.item-nm{font-size:15px;font-weight:800;color:#191f28;margin:3px 0 2px;line-height:1.35;}
+.item-badges{display:flex;gap:5px;margin:6px 0 8px;flex-wrap:wrap;}
+.ibadge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:7px;background:#f1f3f7;color:#4e5968;}
+.ibadge.theme{background:#fff4ec;color:#e8590c;}
+.item-price{font-size:12px;color:#4e5968;line-height:1.5;}
+.item-price b{color:#191f28;font-weight:800;}
+.item-price .key{font-weight:800;color:#3182f6;}
+.item-foot{display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid #f4f6fb;font-size:11px;color:#adb5bd;}
+.item-foot .f{display:flex;align-items:center;gap:3px;}
+
+/* 하단 탭 */
+.tabbar{position:absolute;bottom:0;left:0;right:0;height:74px;background:#fff;border-top:1px solid #eef1f6;display:flex;padding:10px 2px 0;}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;font-weight:600;color:#adb5bd;}
+.tab.on{color:#3182f6;}
+.tab svg{width:22px;height:22px;}
+
+/* === 반응형: 모바일 꽉 참 + PC 폰 프레임 === */
+@media (max-width:599px){
+  body{background:#f4f6fb !important;padding:0 !important;}
+  .phone{width:100% !important;max-width:100% !important;height:100vh !important;height:100dvh !important;border-radius:0 !important;box-shadow:none !important;}
+}
+</style></head>
+<body>
+<div class="phone">
+  <div class="status"><span>11:55</span><span>&#128246; &#128267;</span></div>
+  <div class="scroll">
+    <div class="hd">
+      <div class="title">양도양수</div>
+      <div class="reg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M12 5v14M5 12h14"/></svg>매물 등록</div>
+    </div>
+
+    <div class="filter-bar">
+      <span class="fchip on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.5V19l4 2v-8.5z"/></svg>필터</span>
+      <span class="fchip">지역</span>
+      <span class="fchip">업종</span>
+      <span class="fchip">보증금</span>
+      <span class="fchip">권리금</span>
+      <span class="fchip">운영형태</span>
+    </div>
+
+    <div class="sortrow">
+      <span class="cnt">매물 <b>1,284</b>건</span>
+      <span class="sort">최신순 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>
+    </div>
+
+    <!-- 매물 1 -->
+    <div class="item" style="cursor:pointer" onclick="location.href='transfer-detail.html'">
+      <div class="item-body">
+        <div class="item-photo" style="background:linear-gradient(135deg,#8d6e63,#5d4037)"><span class="cnt-badge"><svg width="9" height="9" viewBox="0 0 24 24" fill="#fff"><path d="M4 5h16v14H4z" fill="none" stroke="#fff" stroke-width="2"/><circle cx="9" cy="10" r="1.5" fill="#fff"/></svg>8</span></div>
+        <div class="item-info">
+          <div class="item-loc"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>인천 연수구 송도동</div>
+          <div class="item-nm">역전할머니맥주 송도더테라스점</div>
+          <div class="item-badges"><span class="ibadge theme">프랜차이즈</span><span class="ibadge">주류</span><span class="ibadge">28평</span><span class="ibadge">오토운영</span></div>
+          <div class="item-price"><span class="key">권리금 7,000만</span> · 보증금 4,000만 / 월세 540만</div>
+        </div>
+      </div>
+      <div class="item-foot"><span class="f"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>조회 37</span><span class="f"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg>찜 12</span><span class="f">오늘 등록</span></div>
+    </div>
+
+    <!-- 매물 2 -->
+    <div class="item" style="cursor:pointer" onclick="location.href='transfer-detail.html'">
+      <div class="item-body">
+        <div class="item-photo" style="background:linear-gradient(135deg,#ffb74d,#f57c00)"><span class="cnt-badge">📷 5</span></div>
+        <div class="item-info">
+          <div class="item-loc"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>서울 강북구 미아동</div>
+          <div class="item-nm">꾸브라꼬숯불두마리치킨 송천점</div>
+          <div class="item-badges"><span class="ibadge theme">프랜차이즈</span><span class="ibadge">치킨</span><span class="ibadge">18평</span><span class="ibadge">1인운영</span></div>
+          <div class="item-price"><span class="key">권리금 3,000만</span> · 보증금 2,000만 / 월세 180만</div>
+        </div>
+      </div>
+      <div class="item-foot"><span class="f">조회 128</span><span class="f">찜 24</span><span class="f">2시간 전</span></div>
+    </div>
+
+    <!-- 매물 3 -->
+    <div class="item" style="cursor:pointer" onclick="location.href='transfer-detail.html'">
+      <div class="item-body">
+        <div class="item-photo" style="background:linear-gradient(135deg,#4db6ac,#00897b)"><span class="cnt-badge">📷 6</span></div>
+        <div class="item-info">
+          <div class="item-loc"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>경기 수원시 권선구</div>
+          <div class="item-nm">무인치즈실내복수원호매실점</div>
+          <div class="item-badges"><span class="ibadge theme">무인</span><span class="ibadge">키즈</span><span class="ibadge">45평</span><span class="ibadge">무인운영</span></div>
+          <div class="item-price"><span class="key">권리금 5,000만</span> · 보증금 3,000만 / 월세 320만</div>
+        </div>
+      </div>
+      <div class="item-foot"><span class="f">조회 89</span><span class="f">찜 15</span><span class="f">5시간 전</span></div>
+    </div>
+
+    <!-- 매물 4 -->
+    <div class="item" style="cursor:pointer" onclick="location.href='transfer-detail.html'">
+      <div class="item-body">
+        <div class="item-photo" style="background:linear-gradient(135deg,#ba68c8,#8e24aa)"><span class="cnt-badge">📷 9</span></div>
+        <div class="item-info">
+          <div class="item-loc"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>경기 시흥시 정왕동</div>
+          <div class="item-nm">곱네한우곱창 본점 (연매출 6억↑)</div>
+          <div class="item-badges"><span class="ibadge theme">프랜차이즈</span><span class="ibadge">외식</span><span class="ibadge">60평</span><span class="ibadge">2~3인</span></div>
+          <div class="item-price"><span class="key">권리금 협의</span> · 보증금 5,000만 / 월세 600만</div>
+        </div>
+      </div>
+      <div class="item-foot"><span class="f">조회 203</span><span class="f">찜 41</span><span class="f">6시간 전</span></div>
+    </div>
+  </div>
+
+  <div style="cursor:pointer" onclick="location.href='home-mockup.html'" class="tabbar">
+    <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg>홈</div>
+    <div class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16l-4-4 4-4M3 12h13M17 8l4 4-4 4M21 12H8"/></svg>양도양수</div>
+    <div style="cursor:pointer" onclick="location.href='expert.html'" class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>전문가</div>
+    <div style="cursor:pointer" onclick="location.href='home-mockup.html'" class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>내 창업</div>
+    <div style="cursor:pointer" onclick="location.href='talk-meeting.html'" class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>톡·미팅</div>
+    <div style="cursor:pointer" onclick="location.href='myinfo.html'" class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>내 정보</div>
+  </div>
+</div>
+</body></html>

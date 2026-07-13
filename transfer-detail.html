@@ -1,0 +1,144 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Pretendard',sans-serif;-webkit-font-smoothing:antialiased;}
+body{background:#dde1e8;padding:20px;display:flex;justify-content:center;}
+.phone{width:390px;background:#fff;border-radius:36px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.2);position:relative;height:844px;}
+.status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:13px;font-weight:600;color:#191f28;position:absolute;top:0;left:0;right:0;z-index:10;}
+.scroll{height:844px;overflow-y:auto;padding-bottom:90px;}
+.scroll::-webkit-scrollbar{display:none;}
+svg{display:block;}
+
+/* 상단 네비 */
+.topnav{position:absolute;top:44px;left:0;right:0;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:10;}
+.topnav .nb{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;color:#191f28;backdrop-filter:blur(4px);}
+
+/* 사진 갤러리 */
+.gallery{height:280px;background:linear-gradient(135deg,#8d6e63,#5d4037);position:relative;}
+.gallery .gcount{position:absolute;bottom:14px;right:14px;font-size:12px;color:#fff;background:rgba(0,0,0,.55);padding:5px 12px;border-radius:20px;font-weight:600;}
+.gallery .gvideo{position:absolute;bottom:14px;left:14px;font-size:12px;color:#fff;background:rgba(0,0,0,.55);padding:5px 12px;border-radius:20px;font-weight:600;display:flex;align-items:center;gap:5px;}
+
+/* 본문 */
+.body{padding:20px;}
+.b-loc{font-size:13px;color:#8b95a1;display:flex;align-items:center;gap:4px;}
+.b-title{font-size:22px;font-weight:800;color:#191f28;letter-spacing:-.02em;line-height:1.35;margin:6px 0 10px;}
+.b-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.bb{font-size:12px;font-weight:600;padding:5px 11px;border-radius:8px;background:#f1f3f7;color:#4e5968;}
+.bb.theme{background:#fff4ec;color:#e8590c;}
+
+/* 가격 박스 */
+.price-box{background:#f8fafc;border-radius:16px;padding:18px;margin-bottom:20px;}
+.pb-main{display:flex;align-items:baseline;gap:8px;margin-bottom:14px;}
+.pb-main .lbl{font-size:13px;color:#8b95a1;font-weight:600;}
+.pb-main .val{font-size:24px;font-weight:800;color:#3182f6;}
+.pb-main .neg{font-size:12px;color:#8b95a1;background:#eef1f6;padding:3px 8px;border-radius:7px;font-weight:600;}
+.pb-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.pb-item{display:flex;justify-content:space-between;font-size:13px;}
+.pb-item .k{color:#8b95a1;}
+.pb-item .v{color:#191f28;font-weight:700;}
+
+/* 정보 테이블 */
+.info-sec{margin-bottom:20px;}
+.sec-title{font-size:16px;font-weight:800;color:#191f28;margin-bottom:12px;}
+.info-row{display:flex;padding:11px 0;border-bottom:1px solid #f4f6fb;font-size:14px;}
+.info-row .k{width:80px;color:#8b95a1;flex-shrink:0;}
+.info-row .v{color:#191f28;font-weight:600;flex:1;}
+
+/* 매출 안내 (직접 문의) */
+.sales-notice{background:#fff8f0;border:1px solid #ffe8cc;border-radius:14px;padding:16px;margin-bottom:20px;display:flex;gap:11px;align-items:flex-start;}
+.sales-notice svg{flex-shrink:0;color:#e8590c;margin-top:1px;}
+.sales-notice .txt{font-size:13px;color:#5f3dc4;line-height:1.5;}
+.sales-notice .txt b{color:#e8590c;}
+.sales-notice .txt .sub{color:#8b95a1;font-size:12px;margin-top:2px;}
+
+/* 지도 */
+.map-box{border-radius:16px;overflow:hidden;margin-bottom:8px;border:1px solid #eef1f6;}
+.map-img{height:180px;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);position:relative;}
+.map-pin{position:absolute;top:50%;left:50%;transform:translate(-50%,-100%);}
+.map-pin svg{width:36px;height:36px;color:#e8590c;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3));}
+.map-label{position:absolute;bottom:12px;left:12px;background:#fff;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;color:#191f28;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+.map-around{font-size:12px;color:#8b95a1;padding:4px 4px 0;line-height:1.6;}
+
+/* 설명 */
+.desc{font-size:14px;color:#4e5968;line-height:1.7;white-space:pre-line;}
+
+/* 하단 고정 문의 바 */
+.bottom-bar{position:absolute;bottom:0;left:0;right:0;padding:14px 16px 24px;background:#fff;border-top:1px solid #eef1f6;display:flex;gap:10px;align-items:center;}
+.bb-fav{width:52px;height:52px;border:1.5px solid #eef1f6;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#adb5bd;flex-shrink:0;}
+.bb-chat{flex:1;background:#3182f6;color:#fff;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:800;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px;}
+
+/* === 반응형: 모바일 꽉 참 + PC 폰 프레임 === */
+@media (max-width:599px){
+  body{background:#f4f6fb !important;padding:0 !important;}
+  .phone{width:100% !important;max-width:100% !important;height:100vh !important;height:100dvh !important;border-radius:0 !important;box-shadow:none !important;}
+}
+</style></head>
+<body>
+<div class="phone">
+  <div class="status"><span>11:55</span><span>&#128246; &#128267;</span></div>
+  <div class="topnav">
+    <div class="nb"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></div>
+    <div class="nb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg></div>
+  </div>
+  <div class="scroll">
+    <div class="gallery">
+      <span class="gvideo"><svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>동영상</span>
+      <span class="gcount">1 / 8</span>
+    </div>
+    <div class="body">
+      <div class="b-loc"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>인천 연수구 송도동</div>
+      <div class="b-title">역전할머니맥주1982<br>송도더테라스점</div>
+      <div class="b-badges"><span class="bb theme">프랜차이즈</span><span class="bb">주류</span><span class="bb">실면적 28평</span><span class="bb">오토운영</span></div>
+
+      <div class="price-box">
+        <div class="pb-main"><span class="lbl">권리금</span><span class="val">7,000만원</span><span class="neg">협의가능</span></div>
+        <div class="pb-grid">
+          <div class="pb-item"><span class="k">보증금</span><span class="v">4,000만원</span></div>
+          <div class="pb-item"><span class="k">월세</span><span class="v">540만원</span></div>
+          <div class="pb-item"><span class="k">관리비</span><span class="v">100만원</span></div>
+          <div class="pb-item"><span class="k">주차</span><span class="v">2대</span></div>
+        </div>
+      </div>
+
+      <div class="info-sec">
+        <div class="sec-title">매물 정보</div>
+        <div class="info-row"><span class="k">업종</span><span class="v">외식업 (주류)</span></div>
+        <div class="info-row"><span class="k">면적</span><span class="v">실면적 93㎡ (28평)</span></div>
+        <div class="info-row"><span class="k">주소</span><span class="v">인천 연수구 송도동 316</span></div>
+        <div class="info-row"><span class="k">운영형태</span><span class="v">오토운영 (점장 상주)</span></div>
+        <div class="info-row"><span class="k">테마</span><span class="v">프랜차이즈</span></div>
+      </div>
+
+      <div class="sales-notice">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="txt"><b>매출·순이익은 판매자에게 직접 문의</b><div class="sub">민감한 정보로 상담 시 판매자가 직접 안내해 드립니다</div></div>
+      </div>
+
+      <div class="info-sec">
+        <div class="sec-title">위치</div>
+        <div class="map-box">
+          <div class="map-img">
+            <div class="map-pin"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 00-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 00-7-7z"/><circle cx="12" cy="9" r="2.5" fill="#fff"/></svg></div>
+            <div class="map-label">송도더테라스오피스텔</div>
+          </div>
+        </div>
+        <div class="map-around">주변: 송도SK뷰아파트 · GS25 · 파리바게뜨 · 힐스테이트송도 · 근로복지공단 어린이집</div>
+      </div>
+
+      <div class="info-sec">
+        <div class="sec-title">상세 설명</div>
+        <div class="desc">완전 풀오토 세팅해뒀습니다.
+매장 출근 하지 않고 정직원 점장이 가게 운영 맡아서 하고 있습니다.
+그만큼 어느 누구나 인수하더라도 운영하기 쉽도록 세팅해뒀습니다.
+운영에 필요한 자료들 당연히 드릴거고 관리하기 너무 쉬우실겁니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="bb-fav"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg></div>
+    <button class="bb-chat"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>판매자에게 상담 신청</button>
+  </div>
+</div>
+</body></html>

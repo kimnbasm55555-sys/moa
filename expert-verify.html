@@ -1,0 +1,119 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Pretendard',sans-serif;-webkit-font-smoothing:antialiased;}
+body{background:#dde1e8;padding:20px;display:flex;justify-content:center;}
+.phone{width:390px;background:#f4f6fb;border-radius:36px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.2);position:relative;height:844px;}
+.status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:13px;font-weight:600;color:#191f28;}
+.scroll{height:726px;overflow-y:auto;padding:0 20px 24px;}
+.scroll::-webkit-scrollbar{display:none;}
+svg{display:block;}
+
+.hd{padding:8px 0 16px;}
+.hd .title{font-size:20px;font-weight:800;color:#191f28;letter-spacing:-.02em;}
+.hd .sub{font-size:13px;color:#8b95a1;margin-top:3px;line-height:1.5;}
+
+/* 신청 직군 */
+.role-box{background:#e8f2ff;border-radius:14px;padding:14px 16px;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+.role-box svg{color:#3182f6;flex-shrink:0;}
+.role-box .rt{font-size:13px;color:#4e5968;}
+.role-box .rt b{color:#191f28;font-weight:800;}
+
+/* 업로드 카드 */
+.upload-card{background:#fff;border-radius:16px;padding:18px;margin-bottom:14px;box-shadow:0 2px 10px rgba(60,80,140,.05);}
+.uc-num{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:#3182f6;margin-bottom:4px;}
+.uc-num .n{width:18px;height:18px;border-radius:50%;background:#3182f6;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;}
+.uc-title{font-size:15px;font-weight:800;color:#191f28;margin-bottom:4px;}
+.uc-desc{font-size:12px;color:#8b95a1;line-height:1.5;margin-bottom:14px;}
+.uc-req{font-size:10px;font-weight:700;color:#e8590c;background:#fff4ec;padding:2px 8px;border-radius:6px;margin-left:6px;}
+.upload-box{border:1.5px dashed #cbd2da;border-radius:12px;padding:22px;text-align:center;background:#f8fafc;}
+.upload-box.done{border-style:solid;border-color:#12b886;background:#f0fdf9;}
+.ub-ic{width:42px;height:42px;border-radius:12px;background:#eef1f6;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;}
+.upload-box.done .ub-ic{background:#d3f9e8;}
+.ub-ic svg{width:20px;height:20px;color:#8b95a1;}
+.upload-box.done .ub-ic svg{color:#12b886;}
+.ub-txt{font-size:13px;font-weight:600;color:#4e5968;}
+.ub-sub{font-size:11px;color:#adb5bd;margin-top:3px;}
+.ub-file{font-size:13px;font-weight:700;color:#12b886;display:flex;align-items:center;justify-content:center;gap:6px;}
+
+/* AI 검토 결과 */
+.ai-card{background:linear-gradient(135deg,#f3f0ff,#eef6ff);border-radius:16px;padding:18px;margin-bottom:14px;border:1px solid #e5dbff;}
+.ai-title{font-size:14px;font-weight:800;color:#5f3dc4;margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+.ai-title .spark{font-size:15px;}
+.ai-row{display:flex;align-items:center;gap:8px;padding:8px 0;font-size:13px;}
+.ai-row svg{flex-shrink:0;color:#12b886;}
+.ai-row .k{color:#8b95a1;}
+.ai-row .v{color:#191f28;font-weight:700;margin-left:auto;}
+.ai-match{margin-top:10px;padding:11px 13px;background:#e7f6ec;border-radius:10px;font-size:12px;color:#0ca678;font-weight:700;display:flex;align-items:center;gap:7px;}
+
+/* 검토 대기 안내 */
+.review-notice{background:#fff8f0;border:1px solid #ffe8cc;border-radius:14px;padding:14px 16px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-start;}
+.review-notice svg{flex-shrink:0;color:#e8590c;margin-top:1px;}
+.review-notice .txt{font-size:12px;color:#4e5968;line-height:1.5;}
+.review-notice .txt b{color:#e8590c;}
+
+.submit{width:100%;background:#3182f6;color:#fff;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:800;font-family:inherit;}
+
+/* === 반응형: 모바일 꽉 참 + PC 폰 프레임 === */
+@media (max-width:599px){
+  body{background:#f4f6fb !important;padding:0 !important;}
+  .phone{width:100% !important;max-width:100% !important;height:100vh !important;height:100dvh !important;border-radius:0 !important;box-shadow:none !important;}
+}
+</style></head>
+<body>
+<div class="phone">
+  <div class="status"><span>11:55</span><span>&#128246; &#128267;</span></div>
+  <div class="scroll">
+    <div class="hd">
+      <div class="title">전문가 인증</div>
+      <div class="sub">자격을 확인하고 인증해요. 창업자가 믿고 상담할 수 있도록요.</div>
+    </div>
+
+    <div class="role-box">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      <span class="rt">신청 직군 · <b>세무사</b></span>
+    </div>
+
+    <!-- 자격증 -->
+    <div class="upload-card">
+      <span class="uc-num"><span class="n">1</span>자격증</span><span class="uc-req">필수</span>
+      <div class="uc-title">세무사 자격증</div>
+      <div class="uc-desc">이름·자격 종류·자격번호가 보이도록 촬영해 주세요.</div>
+      <div class="upload-box done">
+        <div class="ub-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <div class="ub-file"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#12b886" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>세무사자격증.jpg</div>
+        <div class="ub-sub">업로드 완료</div>
+      </div>
+    </div>
+
+    <!-- 사업자등록증 -->
+    <div class="upload-card">
+      <span class="uc-num"><span class="n">2</span>사업자등록증</span><span class="uc-req">필수</span>
+      <div class="uc-title">사업자등록증</div>
+      <div class="uc-desc">실제 사무소 운영을 확인해요. 상호·업종이 보이면 됩니다.</div>
+      <div class="upload-box done">
+        <div class="ub-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <div class="ub-file"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#12b886" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>사업자등록증.jpg</div>
+        <div class="ub-sub">업로드 완료</div>
+      </div>
+    </div>
+
+    <!-- AI 검토 결과 -->
+    <div class="ai-card">
+      <div class="ai-title"><span class="spark">✦</span>AI 서류 검토 결과</div>
+      <div class="ai-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span class="k">이름</span><span class="v">김세무 (일치)</span></div>
+      <div class="ai-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span class="k">자격 종류</span><span class="v">세무사 (일치)</span></div>
+      <div class="ai-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span class="k">사업자 상호</span><span class="v">김세무 세무회계</span></div>
+      <div class="ai-match"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>신청 직군(세무사)과 서류가 일치합니다</div>
+    </div>
+
+    <div class="review-notice">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <div class="txt">AI 검토 통과 후 <b>운영팀이 최종 확인</b>합니다. 보통 1~2일 안에 인증이 완료돼요.</div>
+    </div>
+
+    <button class="submit">인증 신청하기</button>
+  </div>
+</div>
+</body></html>

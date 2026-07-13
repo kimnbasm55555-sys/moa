@@ -14,17 +14,17 @@
   --fs-cap:13px; --fs-sm:15px; --fs-base:17px; --fs-lg:20px; --fs-xl:26px; --fs-2xl:34px;
   --radius:16px; --radius-sm:12px; --radius-lg:22px; --maxw:440px;
   --ease:cubic-bezier(.22,.61,.36,1);
-  --accent:#5266eb; --accent-press:#4255d4;
+  --accent:#3182f6; --accent-press:#1b64da;
   --ok:#2f9e6f; --ok-soft:#e6f4ee; --danger:#c65b4e;
 }
 [data-theme="light"] {
-  --bg:#f6f5f2; --surface:#ffffff; --surface-2:#efece5; --border:#e4e0d6; --border-strong:#d3cdbe;
-  --text:#2a2924; --text-2:#5a5548; --text-3:#8a8478;
-  --shadow:0 1px 2px rgba(42,41,36,.03),0 6px 20px rgba(42,41,36,.05); --accent-soft:#ecefff;
+  --bg:#f4f6fb; --surface:#ffffff; --surface-2:#eef1f6; --border:#eef1f6; --border-strong:#dbe1ea;
+  --text:#191f28; --text-2:#4e5968; --text-3:#8b95a1;
+  --shadow:0 4px 16px rgba(60,80,140,.06); --accent-soft:#e8f2ff;
 }
 [data-theme="dark"] {
-  --bg:#171721; --surface:#1e1e2a; --surface-2:#272735; --border:#2c2c3a; --border-strong:#3a3a4a;
-  --text:#ededf3; --text-2:#a3a3b2; --text-3:#6f6f80;
+  --bg:#15181f; --surface:#1e222b; --surface-2:#272c37; --border:#2a2f3a; --border-strong:#3a4150;
+  --text:#f0f2f5; --text-2:#a7b0bd; --text-3:#6b7684;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px rgba(0,0,0,.4);
   --accent:#5c70ef; --accent-soft:#232338; --ok:#4bbd8c; --danger:#dd7568;
 }
@@ -50,8 +50,8 @@ body {
 .card .sub { font-size:var(--fs-sm); color:var(--text-2); margin-bottom:var(--sp-5); }
 
 /* 역할 선택 (회원가입) */
-.role-tabs { display:flex; gap:var(--sp-2); margin-bottom:var(--sp-5); }
-.role-tab { flex:1; font-family:inherit; font-size:var(--fs-sm); font-weight:700; padding:var(--sp-4); border-radius:var(--radius-sm);
+.role-tabs { display:flex; flex-direction:column; gap:var(--sp-2); margin-bottom:var(--sp-5); }
+.role-tab { font-family:inherit; font-size:var(--fs-sm); font-weight:700; padding:var(--sp-4); border-radius:var(--radius-sm); text-align:left;
   background:var(--surface-2); border:1.5px solid transparent; color:var(--text-2); cursor:pointer; transition:all .16s var(--ease); }
 .role-tab.on { background:var(--accent-soft); border-color:var(--accent); color:var(--accent); }
 
@@ -86,6 +86,12 @@ body {
   display:flex; align-items:center; justify-content:center; }
 
 .hidden { display:none !important; }
+
+/* === 반응형: 모바일 꽉 참 + PC 폰 프레임 === */
+@media (max-width:599px){
+  body{background:#f4f6fb !important;padding:0 !important;}
+  .phone{width:100% !important;max-width:100% !important;height:100vh !important;height:100dvh !important;border-radius:0 !important;box-shadow:none !important;}
+}
 </style>
 </head>
 <body data-theme="light">
@@ -121,6 +127,7 @@ body {
     <div class="role-tabs">
       <button class="role-tab on" data-role="founder">창업 준비 중이에요</button>
       <button class="role-tab" data-role="rep">브랜드 담당자예요</button>
+      <button class="role-tab" data-role="expert">전문가예요</button>
     </div>
     <div class="msg" id="signupMsg"></div>
     <div class="field">
@@ -134,10 +141,6 @@ body {
     <div class="field">
       <label>비밀번호</label>
       <input type="password" id="suPw" autocomplete="new-password" placeholder="비밀번호 (4자 이상)">
-    </div>
-    <div class="field">
-      <label>연락처 (선택)</label>
-      <input type="tel" id="suPhone" placeholder="010-0000-0000">
     </div>
     <button class="btn" id="signupBtn">가입하고 시작하기</button>
     <div class="switch">이미 계정이 있으신가요? <button id="toLogin">로그인</button></div>
@@ -223,7 +226,7 @@ body {
 
   /* 회원가입 */
   $('#signupBtn').addEventListener('click', async ()=>{
-    const name=$('#suName').value.trim(), id=$('#suId').value.trim(), pw=$('#suPw').value, phone=$('#suPhone').value.trim();
+    const name=$('#suName').value.trim(), id=$('#suId').value.trim(), pw=$('#suPw').value;
     hideMsg('#signupMsg');
     if (!id || !pw){ showMsg('#signupMsg','아이디와 비밀번호는 필수예요.','error'); return; }
     if (pw.length < 4){ showMsg('#signupMsg','비밀번호는 4자 이상으로 해주세요.','error'); return; }

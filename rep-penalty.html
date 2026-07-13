@@ -1,0 +1,94 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Pretendard',sans-serif;-webkit-font-smoothing:antialiased;}
+body{background:#dde1e8;padding:20px;display:flex;justify-content:center;}
+.phone{width:390px;background:#f4f6fb;border-radius:36px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.2);position:relative;height:844px;}
+.status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:13px;font-weight:600;color:#191f28;}
+.scroll{height:800px;overflow-y:auto;padding:0 20px 24px;}
+.scroll::-webkit-scrollbar{display:none;}
+svg{display:block;}
+
+.hd{padding:8px 0 16px;}
+.hd .title{font-size:20px;font-weight:800;color:#191f28;}
+
+/* 제외 상태 배너 */
+.penalty-banner{background:linear-gradient(135deg,#ff6b6b,#fa5252);border-radius:18px;padding:22px 20px;color:#fff;margin-bottom:18px;}
+.pb-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.2);padding:5px 11px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:12px;}
+.pb-title{font-size:19px;font-weight:800;line-height:1.4;margin-bottom:8px;}
+.pb-desc{font-size:13px;opacity:.95;line-height:1.6;}
+
+/* 페널티 상세 */
+.card{background:#fff;border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 2px 10px rgba(60,80,140,.05);}
+.card-title{font-size:15px;font-weight:800;color:#191f28;margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+.pinfo-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f4f6fb;font-size:14px;}
+.pinfo-row:last-child{border-bottom:none;}
+.pinfo-row .k{color:#8b95a1;}
+.pinfo-row .v{color:#191f28;font-weight:700;}
+.pinfo-row .v.red{color:#fa5252;}
+
+/* 신고 사유 리스트 */
+.report-item{padding:12px 0;border-bottom:1px solid #f4f6fb;}
+.report-item:last-child{border-bottom:none;}
+.ri-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.ri-reason{font-size:14px;font-weight:700;color:#191f28;}
+.ri-date{font-size:11px;color:#adb5bd;}
+.ri-detail{font-size:12px;color:#8b95a1;line-height:1.5;}
+
+/* 복구 안내 */
+.recover{background:#eef6ff;border-radius:16px;padding:18px;margin-bottom:16px;}
+.recover-title{font-size:15px;font-weight:800;color:#1971c2;margin-bottom:8px;display:flex;align-items:center;gap:7px;}
+.recover-desc{font-size:13px;color:#4e5968;line-height:1.6;margin-bottom:14px;}
+.recover-timer{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:14px;margin-bottom:14px;}
+.rt-days{font-size:24px;font-weight:800;color:#1971c2;}
+.rt-label{font-size:12px;color:#8b95a1;line-height:1.4;}
+.pledge-btn{width:100%;background:#3182f6;color:#fff;border:none;border-radius:14px;padding:15px;font-size:15px;font-weight:800;font-family:inherit;}
+.pledge-btn.disabled{background:#dee2e6;color:#adb5bd;}
+</style></head>
+<body>
+<div class="phone">
+  <div class="status"><span>11:55</span><span>&#128246; &#128267;</span></div>
+  <div class="scroll">
+    <div class="hd"><div class="title">브랜드 상태</div></div>
+
+    <div class="penalty-banner">
+      <div class="pb-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M4.9 4.9l14.2 14.2"/></svg>노출 제외 상태</div>
+      <div class="pb-title">현재 브랜드가<br>창업자에게 노출되지 않아요</div>
+      <div class="pb-desc">신고가 누적되어 운영팀 검토 후 노출이 중단되었습니다. 아래 내용을 확인하고 서약서를 제출하면 다시 활성화됩니다.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fa5252" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>누적된 신고</div>
+      <div class="pinfo-row"><span class="k">신고 횟수</span><span class="v red">3건</span></div>
+      <div class="pinfo-row"><span class="k">검토 결과</span><span class="v red">노출 제외 확정</span></div>
+      <div class="pinfo-row"><span class="k">제외일</span><span class="v">2026.07.13</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8b95a1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 15h6"/></svg>신고 사유</div>
+      <div class="report-item">
+        <div class="ri-top"><span class="ri-reason">우대사항이 실제와 다름</span><span class="ri-date">07.10</span></div>
+        <div class="ri-detail">등록: 가맹비 면제 / 상담: 500만원 할인만 가능</div>
+      </div>
+      <div class="report-item">
+        <div class="ri-top"><span class="ri-reason">약속한 지원 미이행</span><span class="ri-date">07.11</span></div>
+        <div class="ri-detail">인테리어 지원 약속했으나 상담에서 번복</div>
+      </div>
+      <div class="report-item">
+        <div class="ri-top"><span class="ri-reason">원가율 과장</span><span class="ri-date">07.12</span></div>
+        <div class="ri-detail">등록 원가율과 실제 안내 내용 불일치</div>
+      </div>
+    </div>
+
+    <div class="recover">
+      <div class="recover-title"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8M21 3v5h-5"/><path d="M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16M3 21v-5h5"/></svg>다시 활성화하려면</div>
+      <div class="recover-desc">제외 2개월 후, 모아 양식의 서약서를 제출하면 운영팀 확인 후 다시 노출됩니다. 정확한 정보 제공을 약속하는 내용이에요.</div>
+      <div class="recover-timer">
+        <div class="rt-days">D-49</div>
+        <div class="rt-label">서약서 제출 가능일까지<br>(2026.09.13부터 가능)</div>
+      </div>
+      <button class="pledge-btn disabled">2개월 후 서약서 제출 가능</button>
+    </div>
+  </div>
+</div>
+</body></html>

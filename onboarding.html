@@ -1,0 +1,175 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Pretendard',sans-serif;-webkit-font-smoothing:antialiased;}
+body{background:#dde1e8;padding:20px;display:flex;gap:20px;justify-content:center;flex-wrap:wrap;}
+.phone{width:390px;background:#f4f6fb;border-radius:36px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.2);position:relative;height:844px;}
+.status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:13px;font-weight:600;color:#191f28;}
+svg{display:block;}
+
+.ob{height:800px;display:flex;flex-direction:column;padding:0 28px;}
+.ob-skip{text-align:right;padding:8px 0;font-size:14px;color:#adb5bd;font-weight:600;}
+.ob-visual{flex:1;display:flex;align-items:center;justify-content:center;}
+.ob-text{padding-bottom:20px;}
+.ob-tag{font-size:13px;font-weight:800;color:#3182f6;margin-bottom:12px;}
+.ob-title{font-size:26px;font-weight:800;color:#191f28;line-height:1.4;letter-spacing:-.02em;}
+.ob-sub{font-size:15px;color:#8b95a1;line-height:1.6;margin-top:12px;}
+.ob-foot{padding-bottom:36px;}
+.ob-dots{display:flex;gap:7px;justify-content:center;margin-bottom:20px;}
+.dot{width:7px;height:7px;border-radius:4px;background:#d1d8e0;transition:.3s;}
+.dot.on{width:22px;background:#3182f6;}
+.ob-btn{width:100%;background:#3182f6;color:#fff;border:none;border-radius:16px;padding:17px;font-size:16px;font-weight:800;font-family:inherit;}
+
+/* 슬라이드1 비주얼: 돈다발+물음표 */
+.v1{position:relative;width:200px;height:200px;}
+.v1 .coin{position:absolute;width:80px;height:80px;border-radius:20px;background:linear-gradient(135deg,#3182f6,#4d94ff);display:flex;align-items:center;justify-content:center;box-shadow:0 12px 30px rgba(49,130,246,.3);}
+.v1 .c1{top:20px;left:20px;transform:rotate(-12deg);}
+.v1 .c2{top:50px;right:15px;transform:rotate(10deg);background:linear-gradient(135deg,#12b886,#20c997);box-shadow:0 12px 30px rgba(18,184,134,.3);}
+.v1 .c3{bottom:15px;left:50px;transform:rotate(-5deg);background:linear-gradient(135deg,#f76707,#ff922b);box-shadow:0 12px 30px rgba(247,103,7,.3);}
+.v1 .coin svg{width:36px;height:36px;color:#fff;}
+.v1 .qmark{position:absolute;top:-10px;right:-5px;width:48px;height:48px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#3182f6;box-shadow:0 8px 20px rgba(0,0,0,.12);}
+
+/* 슬라이드2 비주얼: 비교 리스트 */
+.v2{width:250px;background:#fff;border-radius:20px;padding:18px;box-shadow:0 12px 40px rgba(60,80,140,.12);}
+.v2-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f4f6fb;}
+.v2-row:last-child{border-bottom:none;}
+.v2-brand{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#191f28;}
+.v2-logo{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800;}
+.v2-perk{font-size:11px;font-weight:700;color:#e8590c;background:#fff4ec;padding:3px 8px;border-radius:6px;}
+.v2-perk.blue{color:#3182f6;background:#e8f2ff;}
+
+/* 슬라이드3 비주얼: 악수/연결 */
+.v3{position:relative;width:220px;height:180px;display:flex;align-items:center;justify-content:center;}
+.v3 .node{width:70px;height:70px;border-radius:22px;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 10px 26px rgba(0,0,0,.15);z-index:2;}
+.v3 .n-user{background:linear-gradient(135deg,#3182f6,#4d94ff);}
+.v3 .n-brand{background:linear-gradient(135deg,#12b886,#20c997);margin-left:60px;}
+.v3 .link{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80px;height:3px;background:linear-gradient(90deg,#3182f6,#12b886);z-index:1;}
+.v3 .node svg{width:32px;height:32px;}
+.v3 .check{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;z-index:3;box-shadow:0 4px 12px rgba(0,0,0,.15);}
+.v3 .check svg{width:18px;height:18px;color:#12b886;}
+
+/* ===== 실리콘밸리 스타일 모션 ===== */
+/* 슬라이드1: 동전 각자 다른 속도로 둥둥 + 그림자 펄스 */
+.v1 .c1{animation:float-a 4s ease-in-out infinite;}
+.v1 .c2{animation:float-b 5s ease-in-out infinite;}
+.v1 .c3{animation:float-c 4.5s ease-in-out infinite;}
+@keyframes float-a{0%,100%{transform:rotate(-12deg) translateY(0)}50%{transform:rotate(-12deg) translateY(-14px)}}
+@keyframes float-b{0%,100%{transform:rotate(10deg) translateY(0)}50%{transform:rotate(10deg) translateY(-18px)}}
+@keyframes float-c{0%,100%{transform:rotate(-5deg) translateY(0)}50%{transform:rotate(-5deg) translateY(-11px)}}
+.v1 .qmark{animation:pop-bounce 2.2s ease-in-out infinite;}
+@keyframes pop-bounce{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-8px) scale(1.08)}}
+
+/* 슬라이드2: 리스트 행이 위에서 하나씩 스르륵 나타남 + 태그 반짝 */
+.v2-row{opacity:0;animation:slide-in .6s ease-out forwards;}
+.v2-row:nth-child(1){animation-delay:.1s;}
+.v2-row:nth-child(2){animation-delay:.25s;}
+.v2-row:nth-child(3){animation-delay:.4s;}
+.v2-row:nth-child(4){animation-delay:.55s;}
+@keyframes slide-in{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+.v2-perk{animation:shimmer 3s ease-in-out infinite;}
+@keyframes shimmer{0%,100%{filter:brightness(1)}50%{filter:brightness(1.08)}}
+.v2{animation:card-rise .7s cubic-bezier(.22,.61,.36,1);}
+@keyframes card-rise{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:none}}
+
+/* 슬라이드3: 노드가 떠오르고 연결선에 빛이 흐름 + 체크 팟 */
+.v3 .n-user{animation:node-float 3.5s ease-in-out infinite;}
+.v3 .n-brand{animation:node-float 3.5s ease-in-out infinite .4s;}
+@keyframes node-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.v3 .n-brand{animation-name:node-float-r;}
+@keyframes node-float-r{0%,100%{transform:translateY(0) translateX(0)}50%{transform:translateY(-9px)}}
+.v3 .link{background:linear-gradient(90deg,#3182f6,#12b886);background-size:200% 100%;animation:flow 2s linear infinite;}
+@keyframes flow{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.v3 .check{animation:check-pop 2.5s ease-in-out infinite;}
+@keyframes check-pop{0%,45%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.18)}}
+
+/* 공통: 텍스트 페이드업 */
+.ob-text{animation:fade-up .8s ease-out .2s both;}
+@keyframes fade-up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+/* 버튼 은은한 글로우 */
+.ob-btn{position:relative;animation:btn-glow 3s ease-in-out infinite;}
+@keyframes btn-glow{0%,100%{box-shadow:0 4px 16px rgba(49,130,246,.25)}50%{box-shadow:0 6px 26px rgba(49,130,246,.45)}}
+
+/* === 반응형: 모바일 꽉 참 + PC 폰 프레임 === */
+@media (max-width:599px){
+  body{background:#f4f6fb !important;padding:0 !important;}
+  .phone{width:100% !important;max-width:100% !important;height:100vh !important;height:100dvh !important;border-radius:0 !important;box-shadow:none !important;}
+}
+</style></head>
+<body>
+
+<!-- 슬라이드 1 -->
+<div class="phone">
+  <div class="status"><span>11:55</span><span>&#128246; &#128267;</span></div>
+  <div class="ob">
+    <div class="ob-skip">건너뛰기</div>
+    <div class="ob-visual">
+      <div class="v1">
+        <div class="coin c1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M14.8 9.5a2.5 2.5 0 00-2.3-1.5h-1a2 2 0 000 4h1a2 2 0 010 4h-1a2.5 2.5 0 01-2.3-1.5"/></svg></div>
+        <div class="coin c2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M14.8 9.5a2.5 2.5 0 00-2.3-1.5h-1a2 2 0 000 4h1a2 2 0 010 4h-1a2.5 2.5 0 01-2.3-1.5"/></svg></div>
+        <div class="coin c3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M14.8 9.5a2.5 2.5 0 00-2.3-1.5h-1a2 2 0 000 4h1a2 2 0 010 4h-1a2.5 2.5 0 01-2.3-1.5"/></svg></div>
+        <div class="qmark">?</div>
+      </div>
+    </div>
+    <div class="ob-text">
+      <div class="ob-tag">현명한 창업의 시작</div>
+      <div class="ob-title">전 재산이 걸린 창업<br>브랜드마다 혜택도 조건도<br>다르다는 거, 아시죠?</div>
+    </div>
+    <div class="ob-foot">
+      <div class="ob-dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+      <button class="ob-btn">다음</button>
+    </div>
+  </div>
+</div>
+
+<!-- 슬라이드 2 -->
+<div class="phone">
+  <div class="status"><span>11:55</span><span>&#128246; &#128267;</span></div>
+  <div class="ob">
+    <div class="ob-skip">건너뛰기</div>
+    <div class="ob-visual">
+      <div class="v2">
+        <div class="v2-row"><div class="v2-brand"><span class="v2-logo" style="background:#3182f6">A</span>A 브랜드</div><span class="v2-perk blue">가맹비 면제</span></div>
+        <div class="v2-row"><div class="v2-brand"><span class="v2-logo" style="background:#12b886">B</span>B 브랜드</div><span class="v2-perk">간판 500만 지원</span></div>
+        <div class="v2-row"><div class="v2-brand"><span class="v2-logo" style="background:#f76707">C</span>C 브랜드</div><span class="v2-perk blue">인테리어 지원</span></div>
+        <div class="v2-row"><div class="v2-brand"><span class="v2-logo" style="background:#845ef7">D</span>D 브랜드</div><span class="v2-perk">로열티 면제</span></div>
+      </div>
+    </div>
+    <div class="ob-text">
+      <div class="ob-tag">브랜드별 혜택 비교</div>
+      <div class="ob-title">가맹비·인테리어·<br>로열티·간판까지…</div>
+      <div class="ob-sub">브랜드마다 수백만 원씩 차이나요.<br>모아에서 한눈에 비교하세요.</div>
+    </div>
+    <div class="ob-foot">
+      <div class="ob-dots"><span class="dot"></span><span class="dot on"></span><span class="dot"></span></div>
+      <button class="ob-btn">다음</button>
+    </div>
+  </div>
+</div>
+
+<!-- 슬라이드 3 -->
+<div class="phone">
+  <div class="status"><span>11:55</span><span>&#128246; &#128267;</span></div>
+  <div class="ob">
+    <div class="ob-skip">&nbsp;</div>
+    <div class="ob-visual">
+      <div class="v3">
+        <div class="link"></div>
+        <div class="node n-user"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg></div>
+        <div class="node n-brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg></div>
+        <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+      </div>
+    </div>
+    <div class="ob-text">
+      <div class="ob-tag">창업자 편에서</div>
+      <div class="ob-title">이제 창업자의 관점에서<br>최고 혜택 받고<br>현명하게 창업하세요</div>
+      <div class="ob-sub">검증된 브랜드와 전문가를<br>모아가 연결해 드릴게요.</div>
+    </div>
+    <div class="ob-foot">
+      <div class="ob-dots"><span class="dot"></span><span class="dot"></span><span class="dot on"></span></div>
+      <button class="ob-btn">모아 시작하기</button>
+    </div>
+  </div>
+</div>
+
+</body></html>
