@@ -81,6 +81,11 @@ svg{display:block;}
 .rep-sort::-webkit-scrollbar{display:none;}
 .rep-sort .sort{white-space:nowrap;font-size:12px;font-weight:700;padding:5px 12px;border-radius:16px;background:transparent;color:#adb5bd;}
 .rep-sort .sort.on{background:#e8f2ff;color:#3182f6;}
+/* 업종 선택 칩 */
+.ind-chips{display:flex;gap:8px;margin:0 0 12px;overflow-x:auto;padding:0 4px 2px;-webkit-overflow-scrolling:touch;}
+.ind-chips::-webkit-scrollbar{display:none;}
+.ind-chip{white-space:nowrap;font-size:13px;font-weight:700;padding:8px 15px;border-radius:18px;background:#fff;border:1px solid #e8ecf1;color:#495057;flex-shrink:0;cursor:pointer;transition:all .15s;}
+.ind-chip.on{background:#3182f6;border-color:#3182f6;color:#fff;box-shadow:0 2px 8px rgba(49,130,246,.28);}
 /* 브랜드 묶음 (브랜드 헤더 + 담당 3명) */
 .brand-group{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(60,80,140,.05);}
 .bg-head{display:flex;gap:12px;margin-bottom:12px;}
@@ -207,6 +212,19 @@ svg{display:block;}
 
     <div class="sec">
       <div class="match-lead">브랜드를 상세히 검토하고 상담 신청해보세요</div>
+      <div class="ind-chips" id="indChips">
+        <span class="ind-chip on" onclick="setIndustry('커피',this)">커피</span>
+        <span class="ind-chip" onclick="setIndustry('치킨',this)">치킨</span>
+        <span class="ind-chip" onclick="setIndustry('분식',this)">분식</span>
+        <span class="ind-chip" onclick="setIndustry('피자',this)">피자</span>
+        <span class="ind-chip" onclick="setIndustry('한식',this)">한식</span>
+        <span class="ind-chip" onclick="setIndustry('일식',this)">일식</span>
+        <span class="ind-chip" onclick="setIndustry('중식',this)">중식</span>
+        <span class="ind-chip" onclick="setIndustry('주점',this)">주점</span>
+        <span class="ind-chip" onclick="setIndustry('제과제빵',this)">제과제빵</span>
+        <span class="ind-chip" onclick="setIndustry('이미용',this)">이미용</span>
+        <span class="ind-chip" onclick="setIndustry('아이스크림/빙수',this)">아이스크림</span>
+      </div>
       <div class="rep-sort">
         <span class="sort on" onclick="setSort('reco',this)">추천순</span>
         <span class="sort" onclick="setSort('store',this)">가맹점수</span>
@@ -433,9 +451,18 @@ function brandCard(b, idx){
   '</div>';
 }
 
-// 로드된 브랜드 원본 보관 + 현재 정렬 상태
+// 로드된 브랜드 원본 보관 + 현재 정렬/업종 상태
 var _brandRows = [];
 var _sortMode = 'reco';   // reco(추천순=가맹점수 기본) / store / survival / sales
+var _industry = '커피';   // 현재 선택 업종
+
+function setIndustry(ind, el){
+  _industry = ind;
+  var chips = document.querySelectorAll('#indChips .ind-chip');
+  for(var i=0;i<chips.length;i++){ chips[i].classList.remove('on'); }
+  if(el) el.classList.add('on');
+  loadBrands();   // 선택 업종으로 다시 로드
+}
 
 function _applySortAndRender(){
   var list = document.getElementById('brandList');
@@ -461,12 +488,17 @@ function setSort(mode, el){
 }
 
 function loadBrands(){
-  // 카페(커피) 업종 가맹점수순 상위 5개 로드
-  var url = SUPA_URL+'/rest/v1/franchise_brands?industry=eq.커피&select=brand_name,industry,store_count,avg_sales,close_rate&order=store_count.desc&limit=5';
+  var list = document.getElementById('brandList');
+  // 선택된 업종의 가맹점수순 상위 5개 로드
+  var url = SUPA_URL+'/rest/v1/franchise_brands?industry=eq.'+encodeURIComponent(_industry)+'&select=brand_name,industry,store_count,avg_sales,close_rate&order=store_count.desc&limit=5';
   fetch(url, { headers: { apikey: SUPA_KEY, Authorization: 'Bearer '+SUPA_KEY } })
     .then(function(r){ return r.json(); })
     .then(function(rows){
-      if(!rows || !rows.length){ return; } // 실패 시 기존 하드코딩 유지
+      if(!rows || !rows.length){
+        _brandRows = [];
+        list.innerHTML = '<div style="text-align:center;color:#adb5bd;font-size:14px;padding:40px 0;">해당 업종의 브랜드가 아직 없어요</div>';
+        return;
+      }
       _brandRows = rows;
       _applySortAndRender();
     })
