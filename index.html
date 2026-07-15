@@ -208,10 +208,10 @@ svg{display:block;}
     <div class="sec">
       <div class="match-lead">브랜드를 상세히 검토하고 상담 신청해보세요</div>
       <div class="rep-sort">
-        <span class="sort on">추천순</span>
-        <span class="sort">창업비용</span>
-        <span class="sort">관심도</span>
-        <span class="sort">가맹점수</span>
+        <span class="sort on" onclick="setSort('reco',this)">추천순</span>
+        <span class="sort" onclick="setSort('store',this)">가맹점수</span>
+        <span class="sort" onclick="setSort('survival',this)">지속률</span>
+        <span class="sort" onclick="setSort('sales',this)">월매출</span>
       </div>
 
       <!-- 브랜드 카드 (Supabase franchise_brands에서 로드) -->
@@ -433,15 +433,42 @@ function brandCard(b, idx){
   '</div>';
 }
 
-function loadBrands(){
+// 로드된 브랜드 원본 보관 + 현재 정렬 상태
+var _brandRows = [];
+var _sortMode = 'reco';   // reco(추천순=가맹점수 기본) / store / survival / sales
+
+function _applySortAndRender(){
   var list = document.getElementById('brandList');
+  var rows = _brandRows.slice();
+  if(_sortMode==='store' || _sortMode==='reco'){
+    rows.sort(function(a,b){ return (b.store_count||0)-(a.store_count||0); });
+  }else if(_sortMode==='survival'){
+    // 폐업률 낮을수록 지속률 높음 → 폐업률 오름차순
+    rows.sort(function(a,b){ return (a.close_rate||999)-(b.close_rate||999); });
+  }else if(_sortMode==='sales'){
+    rows.sort(function(a,b){ return (b.avg_sales||0)-(a.avg_sales||0); });
+  }
+  list.innerHTML = rows.map(brandCard).join('');
+}
+
+function setSort(mode, el){
+  _sortMode = mode;
+  // 버튼 활성 표시 전환
+  var tabs = document.querySelectorAll('.rep-sort .sort');
+  for(var i=0;i<tabs.length;i++){ tabs[i].classList.remove('on'); }
+  if(el) el.classList.add('on');
+  if(_brandRows.length) _applySortAndRender();
+}
+
+function loadBrands(){
   // 카페(커피) 업종 가맹점수순 상위 5개 로드
   var url = SUPA_URL+'/rest/v1/franchise_brands?industry=eq.커피&select=brand_name,industry,store_count,avg_sales,close_rate&order=store_count.desc&limit=5';
   fetch(url, { headers: { apikey: SUPA_KEY, Authorization: 'Bearer '+SUPA_KEY } })
     .then(function(r){ return r.json(); })
     .then(function(rows){
       if(!rows || !rows.length){ return; } // 실패 시 기존 하드코딩 유지
-      list.innerHTML = rows.map(brandCard).join('');
+      _brandRows = rows;
+      _applySortAndRender();
     })
     .catch(function(e){ console.log('브랜드 로드 실패, 시안 유지:', e); });
 }
