@@ -96,9 +96,18 @@ svg{display:block;}
 .bg-nm{font-size:16px;font-weight:800;color:#191f28;display:flex;align-items:center;gap:8px;}
 .bg-nm .bg-match{font-size:12px;font-weight:800;color:#3182f6;background:#e8f2ff;padding:3px 8px;border-radius:8px;}
 .bg-sub{font-size:12px;color:#8b95a1;margin-top:2px;}
-.bg-mt{display:flex;gap:12px;margin-top:8px;font-size:12px;color:#4e5968;}
+.bg-mt{display:flex;gap:12px;margin-top:8px;font-size:12px;color:#4e5968;flex-wrap:wrap;}
 .bg-mt b{color:#191f28;font-weight:800;}
 .bg-mt b.ok{color:#12b886;}
+/* 폐업률 안정성 라벨 (순화된 표현) */
+.bg-mt b.lv-good{color:#12b886;}
+.bg-mt b.lv-mid{color:#868e96;}
+.bg-mt b.lv-care{color:#f59f00;}
+.bg-mt b.lv-none{color:#adb5bd;font-weight:600;}
+/* 출처 표기 */
+.bg-foot-meta{margin-top:7px;}
+.src-btn{font-size:10.5px;color:#adb5bd;cursor:pointer;font-weight:600;}
+.src-btn:active{color:#3182f6;}
 .bg-cost{margin-top:6px;font-size:12px;color:#4e5968;}
 .bg-cost b{color:#e8590c;font-weight:800;}
 .bg-cost .cost-src{font-size:10px;color:#adb5bd;background:#f1f3f7;padding:1px 6px;border-radius:5px;margin-left:4px;font-weight:600;}
@@ -417,8 +426,44 @@ function survivalRate(closeRate){ // 폐점률 → 운영지속률
   var r = 100 - (closeRate||0);
   return r.toFixed(1)+'%';
 }
+// 폐업률 → 순화된 안정성 라벨 (겁주지 않는 표현)
+function stabilityLabel(closeRate){
+  if(closeRate==null) return {txt:'정보없음', cls:'lv-none'};
+  if(closeRate <= 3)  return {txt:'안정적',    cls:'lv-good'};
+  if(closeRate <= 10) return {txt:'보통',      cls:'lv-mid'};
+  return {txt:'신중 검토', cls:'lv-care'};   // '위험' 대신 순화
+}
+// 실투자금(만원) → 표시 문자열. 데이터 없으면 null 반환(카드에서 숨김)
+function fmtInvest(manwon){
+  if(!manwon) return null;
+  if(manwon >= 10000){
+    var eok = (manwon/10000);
+    return '약 '+(eok % 1 === 0 ? eok : eok.toFixed(1))+'억';
+  }
+  return '약 '+Math.round(manwon).toLocaleString()+'만';
+}
 function escapeName(nm){ // (영문) 괄호부분 제거해 깔끔하게
   return (nm||'').replace(/\s*\([^)]*\)\s*/g,'').trim();
+}
+// 출처 안내 (공정위 정보공개서 연도 표기)
+function showSource(){
+  alert('공정거래위원회 가맹사업정보제공시스템\n· 2024년 기준 정보공개서\n\n가맹점 수·평균매출·폐업률·투자금은 각 브랜드가\n공정위에 등록한 최신 정보공개서(2024년)에서 가져온 자료입니다.\n실제 계약 전 반드시 정보공개서 원본을 확인하세요.');
+}
+
+// 카드 3지표 + 안전배지 + 출처 렌더
+function _cardMetrics(b){
+  var invest = fmtInvest(b.startup_cost_min);   // 데이터 없으면 null
+  var stab = stabilityLabel(b.close_rate);
+  var html = '<div class="bg-mt">'+
+    '<span>월매출 <b>'+fmtMoney(b.avg_sales)+'</b></span>'+
+    '<span>폐업률 <b class="'+stab.cls+'">'+(b.close_rate!=null?b.close_rate+'% '+stab.txt:'-')+'</b></span>';
+  if(invest){ html += '<span>실투자금 <b>'+invest+'</b></span>'; }
+  html += '</div>';
+  // 하단: 재무 안전배지(있을 때) + 출처
+  html += '<div class="bg-foot-meta">'+
+    '<span class="src-btn" onclick="event.stopPropagation();showSource()">출처 ⓘ</span>'+
+    '</div>';
+  return html;
 }
 
 function brandCard(b, idx){
@@ -433,10 +478,8 @@ function brandCard(b, idx){
       '<div class="bg-photo"><span class="bg-logo" style="background:linear-gradient(135deg,'+colors[0]+','+colors[1]+')">'+initial+'</span></div>'+
       '<div class="bg-info">'+
         '<div class="bg-nm">'+nm+' <span class="bg-match">'+match+'%</span></div>'+
-        '<div class="bg-sub">'+(b.industry||'')+'</div>'+
-        '<div class="bg-mt"><span>가맹점 <b>'+(b.store_count?b.store_count.toLocaleString():'-')+'</b></span>'+
-          '<span>지속률 <b class="ok">'+survivalRate(b.close_rate)+'</b></span>'+
-          '<span>월매출 <b>'+fmtMoney(b.avg_sales)+'</b></span></div>'+
+        '<div class="bg-sub">'+(b.industry||'')+' · 가맹점 '+(b.store_count?b.store_count.toLocaleString():'-')+'개</div>'+
+        _cardMetrics(b)+
       '</div>'+
     '</div>'+
     '<div class="media-strip">'+
@@ -490,7 +533,7 @@ function setSort(mode, el){
 function loadBrands(){
   var list = document.getElementById('brandList');
   // 선택된 업종의 가맹점수순 상위 5개 로드
-  var url = SUPA_URL+'/rest/v1/franchise_brands?industry=eq.'+encodeURIComponent(_industry)+'&select=brand_name,industry,store_count,avg_sales,close_rate&order=store_count.desc&limit=5';
+  var url = SUPA_URL+'/rest/v1/franchise_brands?industry=eq.'+encodeURIComponent(_industry)+'&select=brand_name,industry,store_count,avg_sales,close_rate,startup_cost_min&order=store_count.desc&limit=5';
   fetch(url, { headers: { apikey: SUPA_KEY, Authorization: 'Bearer '+SUPA_KEY } })
     .then(function(r){ return r.json(); })
     .then(function(rows){
