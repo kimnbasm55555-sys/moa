@@ -235,13 +235,14 @@ svg{display:block;}
         <span class="ind-chip" onclick="setIndustry('주점',this)">주점</span>
         <span class="ind-chip" onclick="setIndustry('제과제빵',this)">제과제빵</span>
         <span class="ind-chip" onclick="setIndustry('이미용',this)">이미용</span>
+        <span class="ind-chip" onclick="setIndustry(['기타 교육','교육 (외국어)','교육 (교과)'],this)">학원·교육</span>
         <span class="ind-chip" onclick="setIndustry('아이스크림/빙수',this)">아이스크림</span>
       </div>
       <div class="rep-sort">
         <span class="sort on" onclick="setSort('reco',this)">추천순</span>
         <span class="sort" onclick="setSort('store',this)">가맹점수</span>
-        <span class="sort" onclick="setSort('survival',this)">지속률</span>
         <span class="sort" onclick="setSort('sales',this)">월매출</span>
+        <span class="sort" onclick="setSort('area',this)">평당매출</span>
       </div>
 
       <!-- 브랜드 카드 (Supabase franchise_brands에서 로드) -->
@@ -466,16 +467,14 @@ function fmtAreaSales(cheonwon){
   return man.toLocaleString()+'만';
 }
 
-// 카드 지표 + 폐업률 안정성 + 평당매출 + 출처/원본링크 렌더
+// 카드 지표 + 평당매출 + 출처/원본링크 렌더 (폐업률은 노출 안 함 → 공정위 원본에서 확인)
 function _cardMetrics(b){
-  var stab = stabilityLabel(b.close_rate);
   var area = fmtAreaSales(b.area_unit_sales);
   var html = '<div class="bg-mt">'+
-    '<span>월매출 <b>'+fmtMoney(b.avg_sales)+'</b></span>'+
-    '<span>폐업률 <b class="'+stab.cls+'">'+(b.close_rate!=null?_fmtRate(b.close_rate)+' '+stab.txt:'-')+'</b></span>';
+    '<span>월매출 <b>'+fmtMoney(b.avg_sales)+'</b></span>';
   if(area){ html += '<span>평당매출 <b>'+area+'</b></span>'; }
   html += '</div>';
-  // 하단: 기준연도 + 출처 + 공정위 원본 확인 링크
+  // 하단: 기준연도 + 출처 + 공정위 원본 확인 링크 (폐업률 등 상세는 원본에서)
   var y = b.base_year || '';
   html += '<div class="bg-foot-meta">'+
     (y ? '<span class="base-yr">'+y+'년 기준</span>' : '')+
@@ -536,11 +535,10 @@ function _applySortAndRender(){
   var rows = _brandRows.slice();
   if(_sortMode==='store' || _sortMode==='reco'){
     rows.sort(function(a,b){ return (b.store_count||0)-(a.store_count||0); });
-  }else if(_sortMode==='survival'){
-    // 폐업률 낮을수록 지속률 높음 → 폐업률 오름차순
-    rows.sort(function(a,b){ return (a.close_rate||999)-(b.close_rate||999); });
   }else if(_sortMode==='sales'){
     rows.sort(function(a,b){ return (b.avg_sales||0)-(a.avg_sales||0); });
+  }else if(_sortMode==='area'){
+    rows.sort(function(a,b){ return (b.area_unit_sales||0)-(a.area_unit_sales||0); });
   }
   list.innerHTML = rows.map(brandCard).join('');
 }
@@ -556,8 +554,16 @@ function setSort(mode, el){
 
 function loadBrands(){
   var list = document.getElementById('brandList');
-  // 선택된 업종의 가맹점수순 상위 5개 로드
-  var url = SUPA_URL+'/rest/v1/franchise_brands?industry=eq.'+encodeURIComponent(_industry)+'&select=brand_name,industry,store_count,avg_sales,close_rate,area_unit_sales,base_year&order=store_count.desc&limit=5';
+  // 선택된 업종(단일 또는 복수)의 가맹점수순 상위 로드
+  var indFilter;
+  if(Array.isArray(_industry)){
+    // 복수 업종: industry=in.("기타 교육","교육 (외국어)",...)
+    var quoted = _industry.map(function(x){ return '"'+x+'"'; }).join(',');
+    indFilter = 'industry=in.('+encodeURIComponent(quoted)+')';
+  }else{
+    indFilter = 'industry=eq.'+encodeURIComponent(_industry);
+  }
+  var url = SUPA_URL+'/rest/v1/franchise_brands?'+indFilter+'&select=brand_name,industry,store_count,avg_sales,close_rate,area_unit_sales,base_year&order=store_count.desc&limit=8';
   fetch(url, { headers: { apikey: SUPA_KEY, Authorization: 'Bearer '+SUPA_KEY } })
     .then(function(r){ return r.json(); })
     .then(function(rows){
