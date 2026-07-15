@@ -105,9 +105,12 @@ svg{display:block;}
 .bg-mt b.lv-care{color:#f59f00;}
 .bg-mt b.lv-none{color:#adb5bd;font-weight:600;}
 /* 출처 표기 */
-.bg-foot-meta{margin-top:7px;}
+.bg-foot-meta{margin-top:7px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.base-yr{font-size:10.5px;color:#3182f6;font-weight:700;background:#eef5ff;padding:2px 7px;border-radius:6px;}
 .src-btn{font-size:10.5px;color:#adb5bd;cursor:pointer;font-weight:600;}
 .src-btn:active{color:#3182f6;}
+.ftc-link{font-size:10.5px;color:#868e96;font-weight:600;text-decoration:none;}
+.ftc-link:active{color:#3182f6;}
 .bg-cost{margin-top:6px;font-size:12px;color:#4e5968;}
 .bg-cost b{color:#e8590c;font-weight:800;}
 .bg-cost .cost-src{font-size:10px;color:#adb5bd;background:#f1f3f7;padding:1px 6px;border-radius:5px;margin-left:4px;font-weight:600;}
@@ -445,25 +448,46 @@ function fmtInvest(manwon){
 function escapeName(nm){ // (영문) 괄호부분 제거해 깔끔하게
   return (nm||'').replace(/\s*\([^)]*\)\s*/g,'').trim();
 }
-// 출처 안내 (공정위 정보공개서 연도 표기)
-function showSource(){
-  alert('공정거래위원회 가맹사업정보제공시스템\n· 2024년 기준 정보공개서\n\n가맹점 수·평균매출·폐업률·투자금은 각 브랜드가\n공정위에 등록한 최신 정보공개서(2024년)에서 가져온 자료입니다.\n실제 계약 전 반드시 정보공개서 원본을 확인하세요.');
+// 출처 안내 (공정위 · 기준연도는 데이터에서 읽음)
+function showSource(year){
+  var y = year || '';
+  alert('공정거래위원회 가맹사업정보제공시스템\n(franchise.ftc.go.kr)'+(y?' · '+y+'년 집계 기준':'')+'\n\n가맹점 수·평균매출·폐업률은 각 브랜드가 공정위에\n등록한 정보공개서의 '+(y?y+'년 ':'')+'확정 실적입니다.\n(매출 통계는 한 해가 끝난 뒤 집계되어,\n현재 '+(y||'최근')+'년이 가장 최신 확정 자료입니다)\n\n실제 계약 전 반드시 정보공개서 원본을 확인하세요.');
+}
+// 공정위 정보공개서 검색 링크 (브랜드명으로 100% 정확 검색)
+function ftcSearchUrl(brandName){
+  // 괄호 영문·특수문자 제거하고 핵심 한글 브랜드명만 (검색 정확도↑)
+  var kw = (brandName||'').replace(/\([^)]*\)/g,'').replace(/[&·].*$/,'').trim();
+  return 'https://franchise.ftc.go.kr/mnu/00013/program/userRqst/list.do?column=brd&searchKeyword='+encodeURIComponent(kw)+'&selUpjong=&selIndus=&pageUnit=10';
+}
+// 평당매출(천원) → 표시 문자열
+function fmtAreaSales(cheonwon){
+  if(!cheonwon || cheonwon<=0) return null;
+  var man = Math.round(cheonwon/10);   // 천원 → 만원 (3.3㎡당 연매출)
+  return man.toLocaleString()+'만';
 }
 
-// 카드 3지표 + 안전배지 + 출처 렌더
+// 카드 지표 + 폐업률 안정성 + 평당매출 + 출처/원본링크 렌더
 function _cardMetrics(b){
-  var invest = fmtInvest(b.startup_cost_min);   // 데이터 없으면 null
   var stab = stabilityLabel(b.close_rate);
+  var area = fmtAreaSales(b.area_unit_sales);
   var html = '<div class="bg-mt">'+
     '<span>월매출 <b>'+fmtMoney(b.avg_sales)+'</b></span>'+
-    '<span>폐업률 <b class="'+stab.cls+'">'+(b.close_rate!=null?b.close_rate+'% '+stab.txt:'-')+'</b></span>';
-  if(invest){ html += '<span>실투자금 <b>'+invest+'</b></span>'; }
+    '<span>폐업률 <b class="'+stab.cls+'">'+(b.close_rate!=null?_fmtRate(b.close_rate)+' '+stab.txt:'-')+'</b></span>';
+  if(area){ html += '<span>평당매출 <b>'+area+'</b></span>'; }
   html += '</div>';
-  // 하단: 재무 안전배지(있을 때) + 출처
+  // 하단: 기준연도 + 출처 + 공정위 원본 확인 링크
+  var y = b.base_year || '';
   html += '<div class="bg-foot-meta">'+
-    '<span class="src-btn" onclick="event.stopPropagation();showSource()">출처 ⓘ</span>'+
+    (y ? '<span class="base-yr">'+y+'년 기준</span>' : '')+
+    '<span class="src-btn" onclick="event.stopPropagation();showSource('+(y||'')+')">출처 ⓘ</span>'+
+    '<a class="ftc-link" href="'+ftcSearchUrl(b.brand_name)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">공정위에서 확인 ↗</a>'+
     '</div>';
   return html;
+}
+// 폐업률 표시: 100% 초과면 '높음'으로 순화 (상한 저장된 데이터 대응)
+function _fmtRate(r){
+  if(r >= 100) return '높음';
+  return r+'%';
 }
 
 function brandCard(b, idx){
@@ -533,7 +557,7 @@ function setSort(mode, el){
 function loadBrands(){
   var list = document.getElementById('brandList');
   // 선택된 업종의 가맹점수순 상위 5개 로드
-  var url = SUPA_URL+'/rest/v1/franchise_brands?industry=eq.'+encodeURIComponent(_industry)+'&select=brand_name,industry,store_count,avg_sales,close_rate,startup_cost_min&order=store_count.desc&limit=5';
+  var url = SUPA_URL+'/rest/v1/franchise_brands?industry=eq.'+encodeURIComponent(_industry)+'&select=brand_name,industry,store_count,avg_sales,close_rate,area_unit_sales,base_year&order=store_count.desc&limit=5';
   fetch(url, { headers: { apikey: SUPA_KEY, Authorization: 'Bearer '+SUPA_KEY } })
     .then(function(r){ return r.json(); })
     .then(function(rows){
