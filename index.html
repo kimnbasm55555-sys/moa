@@ -104,6 +104,7 @@ svg{display:block;}
 .bg-mt b.lv-mid{color:#868e96;}
 .bg-mt b.lv-care{color:#f59f00;}
 .bg-mt b.lv-none{color:#adb5bd;font-weight:600;}
+.bg-mt b.invest{color:#e8590c;}  /* 실투자금 강조 (창업자 핵심 정보) */
 /* 출처 표기 */
 .bg-foot-meta{margin-top:7px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .base-yr{font-size:10.5px;color:#3182f6;font-weight:700;background:#eef5ff;padding:2px 7px;border-radius:6px;}
@@ -242,6 +243,7 @@ svg{display:block;}
         <span class="sort on" onclick="setSort('reco',this)">추천순</span>
         <span class="sort" onclick="setSort('store',this)">가맹점수</span>
         <span class="sort" onclick="setSort('sales',this)">월매출</span>
+        <span class="sort" onclick="setSort('invest',this)">실투자금</span>
         <span class="sort" onclick="setSort('area',this)">평당매출</span>
       </div>
 
@@ -438,13 +440,14 @@ function stabilityLabel(closeRate){
   return {txt:'신중 검토', cls:'lv-care'};   // '위험' 대신 순화
 }
 // 실투자금(만원) → 표시 문자열. 데이터 없으면 null 반환(카드에서 숨김)
-function fmtInvest(manwon){
-  if(!manwon) return null;
+function fmtInvest(won){  // 원 단위 입력 → 억/만 표시
+  if(!won) return null;
+  var manwon = Math.round(won/10000);
   if(manwon >= 10000){
     var eok = (manwon/10000);
-    return '약 '+(eok % 1 === 0 ? eok : eok.toFixed(1))+'억';
+    return (eok % 1 === 0 ? eok : eok.toFixed(1))+'억';
   }
-  return '약 '+Math.round(manwon).toLocaleString()+'만';
+  return manwon.toLocaleString()+'만';
 }
 function escapeName(nm){ // (영문) 괄호부분 제거해 깔끔하게
   return (nm||'').replace(/\s*\([^)]*\)\s*/g,'').trim();
@@ -470,9 +473,11 @@ function fmtAreaSales(cheonwon){
 // 카드 지표 + 평당매출 + 출처/원본링크 렌더 (폐업률은 노출 안 함 → 공정위 원본에서 확인)
 function _cardMetrics(b){
   var area = fmtAreaSales(b.area_unit_sales);
+  var invest = fmtInvest(b.startup_cost_min);
   var html = '<div class="bg-mt">'+
     '<span>월매출 <b>'+fmtMoney(b.avg_sales)+'</b></span>';
   if(area){ html += '<span>평당매출 <b>'+area+'</b></span>'; }
+  if(invest){ html += '<span>실투자금 <b class="invest">'+invest+'</b></span>'; }
   html += '</div>';
   // 하단: 기준연도 + 출처 + 공정위 원본 확인 링크 (폐업률 등 상세는 원본에서)
   var y = b.base_year || '';
@@ -539,6 +544,9 @@ function _applySortAndRender(){
     rows.sort(function(a,b){ return (b.avg_sales||0)-(a.avg_sales||0); });
   }else if(_sortMode==='area'){
     rows.sort(function(a,b){ return (b.area_unit_sales||0)-(a.area_unit_sales||0); });
+  }else if(_sortMode==='invest'){
+    // 실투자금 낮은 순 (창업자는 부담 적은 순 관심), 데이터 없는 건 뒤로
+    rows.sort(function(a,b){ return (a.startup_cost_min||9e15)-(b.startup_cost_min||9e15); });
   }
   list.innerHTML = rows.map(brandCard).join('');
 }
@@ -563,7 +571,7 @@ function loadBrands(){
   }else{
     indFilter = 'industry=eq.'+encodeURIComponent(_industry);
   }
-  var url = SUPA_URL+'/rest/v1/franchise_brands?'+indFilter+'&select=brand_name,industry,store_count,avg_sales,close_rate,area_unit_sales,base_year&order=store_count.desc&limit=8';
+  var url = SUPA_URL+'/rest/v1/franchise_brands?'+indFilter+'&select=brand_name,industry,store_count,avg_sales,close_rate,area_unit_sales,base_year,startup_cost_min&order=store_count.desc&limit=8';
   fetch(url, { headers: { apikey: SUPA_KEY, Authorization: 'Bearer '+SUPA_KEY } })
     .then(function(r){ return r.json(); })
     .then(function(rows){
