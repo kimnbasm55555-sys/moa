@@ -500,8 +500,10 @@ function brandCard(b, idx){
   var initial = nm.charAt(0);
   var match = [98,95,91,88,85][idx] || 90; // 매칭률(임시, 추후 조건기반 계산)
   var mediaColors = colors;
+  // 상세페이지로 넘길 데이터 (브랜드명으로 조회)
+  var detailUrl = 'brand-detail.html?b='+encodeURIComponent(b.brand_name)+'&c='+encodeURIComponent(b.corp_name||'');
   return ''+
-  '<div class="brand-group">'+
+  '<div class="brand-group" onclick="location.href=\''+detailUrl+'\'" style="cursor:pointer;">'+
     '<div class="bg-head">'+
       '<div class="bg-photo"><span class="bg-logo" style="background:linear-gradient(135deg,'+colors[0]+','+colors[1]+')">'+initial+'</span></div>'+
       '<div class="bg-info">'+
@@ -517,7 +519,7 @@ function brandCard(b, idx){
     '</div>'+
     '<div class="card-foot">'+
       '<span class="foot-hint">사진·영상을 눌러 자세히 보세요</span>'+
-      '<button class="apply-sm">상담 신청</button>'+
+      '<button class="apply-sm" onclick="event.stopPropagation()">상담 신청</button>'+
     '</div>'+
   '</div>';
 }
