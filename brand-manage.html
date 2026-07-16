@@ -1,0 +1,244 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#f4f6fb">
+<title>브랜드 정보 관리</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Pretendard',sans-serif;-webkit-font-smoothing:antialiased;}
+html,body{height:100%;}
+body{background:#f4f6fb;display:flex;justify-content:center;}
+.phone{width:100%;max-width:430px;background:#f4f6fb;overflow:hidden;position:relative;height:100vh;height:100dvh;}
+.scroll{height:100vh;height:100dvh;overflow-y:auto;padding-bottom:90px;-webkit-overflow-scrolling:touch;}
+.scroll::-webkit-scrollbar{display:none;}
+svg{display:block;}
+@media (min-width:600px){
+  body{background:#dde1e8;padding:20px;align-items:center;}
+  .phone{max-width:390px;height:844px;border-radius:36px;box-shadow:0 20px 50px rgba(0,0,0,.2);}
+  .scroll{height:844px;}
+}
+.topbar{position:sticky;top:0;z-index:20;height:54px;display:flex;align-items:center;gap:10px;padding:0 16px;background:#fff;border-bottom:1px solid #eef1f5;}
+.tb-back{width:36px;height:36px;border:none;background:transparent;color:#4e5968;cursor:pointer;display:flex;align-items:center;}
+.tb-title{font-size:16px;font-weight:800;color:#191f28;}
+.brand-pick{background:#fff;margin:12px 16px;border-radius:14px;padding:14px 16px;box-shadow:0 2px 8px rgba(60,80,140,.05);}
+.bp-label{font-size:11.5px;color:#8b95a1;font-weight:600;margin-bottom:6px;}
+.bp-select{width:100%;border:1px solid #e8ecf1;border-radius:10px;padding:11px;font-size:14px;font-weight:700;color:#191f28;background:#fff;font-family:inherit;}
+.sec{background:#fff;margin:12px 16px;border-radius:16px;padding:18px;box-shadow:0 2px 8px rgba(60,80,140,.04);}
+.sec-t{font-size:14.5px;font-weight:800;color:#191f28;margin-bottom:4px;}
+.sec-d{font-size:11.5px;color:#adb5bd;margin-bottom:13px;line-height:1.5;}
+.inp{width:100%;border:1px solid #e8ecf1;border-radius:10px;padding:11px 12px;font-size:14px;color:#191f28;font-family:inherit;margin-bottom:8px;}
+.inp:focus{outline:none;border-color:#3182f6;}
+textarea.inp{resize:vertical;min-height:90px;line-height:1.6;}
+.menu-row{display:flex;gap:8px;margin-bottom:8px;}
+.menu-row .inp{margin-bottom:0;}
+.menu-name{flex:2;}
+.menu-price{flex:1;}
+.menu-del,.yt-del{flex-shrink:0;width:38px;border:none;background:#fff0f0;color:#f03e3e;border-radius:10px;cursor:pointer;font-size:18px;font-weight:700;}
+.add-btn{width:100%;border:1px dashed #c9d3e0;background:#f8fafc;color:#3182f6;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.yt-row{display:flex;gap:8px;margin-bottom:8px;}
+.yt-row .inp{margin-bottom:0;}
+.photo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:4px;}
+.photo-cell{aspect-ratio:1;border-radius:10px;overflow:hidden;position:relative;background:#f1f3f5;}
+.photo-cell img{width:100%;height:100%;object-fit:cover;}
+.photo-del{position:absolute;top:3px;right:3px;width:20px;height:20px;border:none;background:rgba(0,0,0,.6);color:#fff;border-radius:50%;font-size:12px;cursor:pointer;line-height:1;}
+.photo-add{aspect-ratio:1;border:1.5px dashed #c9d3e0;border-radius:10px;background:#f8fafc;color:#adb5bd;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px;}
+.cnt{font-size:11px;color:#adb5bd;margin-top:6px;text-align:right;}
+.savebar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid #eef1f5;padding:12px 16px;z-index:30;}
+@media (min-width:600px){.savebar{max-width:390px;bottom:20px;border-radius:0 0 36px 36px;}}
+.save-btn{width:100%;background:#3182f6;color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:800;padding:15px;cursor:pointer;font-family:inherit;}
+.save-btn:disabled{background:#c9d3e0;}
+.gate{text-align:center;padding:70px 24px;color:#8b95a1;}
+.gate .t{font-size:16px;font-weight:700;color:#4e5968;margin-bottom:8px;}
+.gate .s{font-size:13px;line-height:1.6;}
+.loading{text-align:center;padding:60px;color:#adb5bd;}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#191f28;color:#fff;padding:12px 22px;border-radius:22px;font-size:13.5px;font-weight:600;z-index:50;opacity:0;transition:opacity .3s;pointer-events:none;}
+.toast.show{opacity:1;}
+</style></head>
+<body>
+<div class="phone">
+<div class="scroll" id="scroll">
+  <div class="topbar">
+    <button class="tb-back" onclick="history.back()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <span class="tb-title">브랜드 정보 관리</span>
+  </div>
+  <div id="body"><div class="loading">권한 확인 중…</div></div>
+</div>
+<div class="savebar" id="savebar" style="display:none;">
+  <button class="save-btn" id="saveBtn" onclick="saveAll()">저장하기</button>
+</div>
+<div class="toast" id="toast"></div>
+</div>
+<script>
+/* 앱 이름 — 이름 변경 시 이 한 줄만 수정 */
+var APP_NAME = '모아';
+document.title = APP_NAME + ' · 브랜드 정보 관리';
+
+var SUPA_URL='https://wxecxkckbpgzcdegtahy.supabase.co';
+var SUPA_KEY='sb_publishable_IVu4Fuyb8pKl5-ZkuYqoKA_iHKTwgpq';
+var MAX_PHOTOS=20, MAX_YT=5;
+var _brands=[], _cur=null, _photos=[], _repCode='';
+
+function H(){ return {apikey:SUPA_KEY, Authorization:'Bearer '+SUPA_KEY}; }
+function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},2200); }
+function esc(s){ return (s||'').replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];}); }
+
+// 로그인 담당자 코드 (실제로는 세션에서. 개발용: URL ?rep= 또는 localStorage 대체)
+function getRepCode(){
+  var u=new URLSearchParams(location.search).get('rep');
+  if(u) return u;
+  // 앱 통합 시 세션에서 currentUser.user_code 주입
+  return window._moaRepCode || '';
+}
+
+function init(){
+  _repCode=getRepCode();
+  if(!_repCode){ gate('로그인이 필요합니다','브랜드 담당자로 로그인 후 이용해 주세요.'); return; }
+  // 승인된 담당 브랜드 조회
+  var url=SUPA_URL+'/rest/v1/brand_managers?rep_user_code=eq.'+encodeURIComponent(_repCode)+'&status=eq.approved&select=brand_name,corp_name';
+  fetch(url,{headers:H()}).then(function(r){return r.json();}).then(function(rows){
+    if(!rows||!rows.length){ gate('승인된 브랜드가 없습니다','브랜드 담당 인증이 승인되면\n이곳에서 브랜드 정보를 관리할 수 있어요.'); return; }
+    _brands=rows;
+    renderPicker();
+    selectBrand(0);
+  }).catch(function(){ gate('오류','정보를 불러오지 못했습니다.'); });
+}
+
+function gate(t,s){
+  document.getElementById('body').innerHTML='<div class="gate"><div class="t">'+t+'</div><div class="s">'+s.replace(/\n/g,'<br>')+'</div></div>';
+  document.getElementById('savebar').style.display='none';
+}
+
+function renderPicker(){
+  if(_brands.length<=1) return '';
+  var opts=_brands.map(function(b,i){ return '<option value="'+i+'">'+esc(b.brand_name)+'</option>'; }).join('');
+  return '<div class="brand-pick"><div class="bp-label">관리할 브랜드</div><select class="bp-select" onchange="selectBrand(this.value)">'+opts+'</select></div>';
+}
+
+function selectBrand(idx){
+  var b=_brands[idx];
+  // 현재 브랜드 정보 로드
+  var url=SUPA_URL+'/rest/v1/franchise_brands?brand_name=eq.'+encodeURIComponent(b.brand_name)+'&select=*&limit=1';
+  fetch(url,{headers:H()}).then(function(r){return r.json();}).then(function(rows){
+    _cur=rows[0]||{brand_name:b.brand_name};
+    _photos=((_cur.hq_media&&_cur.hq_media.photos)||[]).slice();
+    renderForm();
+  });
+}
+
+function renderForm(){
+  var b=_cur;
+  var menus=(b.hq_menus&&b.hq_menus.length)?b.hq_menus:[{name:'',price:''}];
+  var yts=((b.hq_media&&b.hq_media.youtube)||[]);
+  if(!yts.length) yts=[''];
+  var html=renderPicker();
+
+  // 대표메뉴
+  html+='<div class="sec"><div class="sec-t">대표 메뉴</div><div class="sec-d">메뉴명과 가격을 입력하세요. 여러 개 추가할 수 있어요.</div><div id="menus">';
+  menus.forEach(function(m){ html+=menuRow(m.name,m.price); });
+  html+='</div><button class="add-btn" onclick="addMenu()">+ 메뉴 추가</button></div>';
+
+  // 유튜브
+  html+='<div class="sec"><div class="sec-t">홍보 영상 (유튜브)</div><div class="sec-d">유튜브 링크를 붙여넣으세요. 최대 '+MAX_YT+'개.</div><div id="yts">';
+  yts.forEach(function(u){ html+=ytRow(u); });
+  html+='</div><button class="add-btn" onclick="addYt()">+ 영상 추가</button></div>';
+
+  // 사진
+  html+='<div class="sec"><div class="sec-t">매장·메뉴 사진</div><div class="sec-d">최대 '+MAX_PHOTOS+'장. 자동으로 용량을 줄여 업로드합니다.</div>'+
+    '<div class="photo-grid" id="photoGrid"></div>'+
+    '<input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="onPhotos(event)">'+
+    '<div class="cnt" id="photoCnt"></div></div>';
+
+  // 본사지원
+  html+='<div class="sec"><div class="sec-t">본사 지원</div><div class="sec-d">상권분석·교육·마케팅·슈퍼바이징 등 본사가 제공하는 지원을 자유롭게 적어주세요.</div>'+
+    '<textarea class="inp" id="hqIntro" placeholder="예) 전문 점포개발팀의 상권분석, 오픈 전 2주 교육, SNS·유튜브 마케팅 지원...">'+esc(b.hq_intro||'')+'</textarea></div>';
+
+  // 브랜드비전
+  html+='<div class="sec"><div class="sec-t">브랜드 비전</div><div class="sec-d">앞으로의 계획·목표를 자유롭게 적어주세요. (예: 올해 100호점 목표)</div>'+
+    '<textarea class="inp" id="hqVision" placeholder="브랜드의 방향과 비전을 소개해 주세요">'+esc(b.hq_vision||'')+'</textarea></div>';
+
+  document.getElementById('body').innerHTML=html;
+  document.getElementById('savebar').style.display='block';
+  renderPhotos();
+}
+
+function menuRow(n,p){ return '<div class="menu-row"><input class="inp menu-name" placeholder="메뉴명" value="'+esc(n)+'"><input class="inp menu-price" type="number" placeholder="가격" value="'+(p||'')+'"><button class="menu-del" onclick="this.parentNode.remove()">×</button></div>'; }
+function addMenu(){ document.getElementById('menus').insertAdjacentHTML('beforeend', menuRow('','')); }
+function ytRow(u){ return '<div class="yt-row"><input class="inp" placeholder="https://youtube.com/..." value="'+esc(u)+'"><button class="yt-del" onclick="this.parentNode.remove()">×</button></div>'; }
+function addYt(){ var n=document.querySelectorAll('#yts .yt-row').length; if(n>=MAX_YT){toast('영상은 최대 '+MAX_YT+'개까지예요');return;} document.getElementById('yts').insertAdjacentHTML('beforeend', ytRow('')); }
+
+function renderPhotos(){
+  var g=document.getElementById('photoGrid'); if(!g) return;
+  var html=_photos.map(function(url,i){ return '<div class="photo-cell"><img src="'+url+'"><button class="photo-del" onclick="delPhoto('+i+')">×</button></div>'; }).join('');
+  if(_photos.length<MAX_PHOTOS){ html+='<div class="photo-add" onclick="document.getElementById(\'photoInput\').click()">+</div>'; }
+  g.innerHTML=html;
+  document.getElementById('photoCnt').textContent=_photos.length+' / '+MAX_PHOTOS;
+}
+function delPhoto(i){ _photos.splice(i,1); renderPhotos(); }
+
+// 사진 선택 → 브라우저에서 리사이즈·압축 → Storage 업로드
+function onPhotos(e){
+  var files=Array.prototype.slice.call(e.target.files);
+  var room=MAX_PHOTOS-_photos.length;
+  if(files.length>room){ toast('최대 '+MAX_PHOTOS+'장까지예요'); files=files.slice(0,room); }
+  files.forEach(function(f){ compressAndUpload(f); });
+  e.target.value='';
+}
+
+function compressAndUpload(file){
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var img=new Image();
+    img.onload=function(){
+      // 최대 1080px로 리사이즈
+      var max=1080, w=img.width, h=img.height;
+      if(w>max||h>max){ if(w>h){h=Math.round(h*max/w);w=max;}else{w=Math.round(w*max/h);h=max;} }
+      var cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      cv.toBlob(function(blob){
+        var path='brand/'+encodeURIComponent(_cur.brand_name)+'/'+Date.now()+'_'+Math.random().toString(36).slice(2,7)+'.webp';
+        fetch(SUPA_URL+'/storage/v1/object/rep-media/'+path,{
+          method:'POST', headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'image/webp','x-upsert':'true'}, body:blob
+        }).then(function(r){
+          if(!r.ok) throw 0;
+          _photos.push(SUPA_URL+'/storage/v1/object/public/rep-media/'+path);
+          renderPhotos();
+        }).catch(function(){ toast('사진 업로드 실패'); });
+      },'image/webp',0.8);
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveAll(){
+  var btn=document.getElementById('saveBtn'); btn.disabled=true; btn.textContent='저장 중…';
+  // 메뉴 수집
+  var menus=[];
+  document.querySelectorAll('#menus .menu-row').forEach(function(r){
+    var n=r.querySelector('.menu-name').value.trim();
+    var p=r.querySelector('.menu-price').value.trim();
+    if(n) menus.push({name:n, price:p?parseInt(p):null});
+  });
+  // 유튜브 수집
+  var yts=[];
+  document.querySelectorAll('#yts .yt-row input').forEach(function(i){ var v=i.value.trim(); if(v) yts.push(v); });
+  var payload={
+    hq_menus: menus,
+    hq_media: {photos:_photos, youtube:yts},
+    hq_intro: document.getElementById('hqIntro').value.trim(),
+    hq_vision: document.getElementById('hqVision').value.trim(),
+    hq_managed: true,
+    hq_updated_at: new Date().toISOString()
+  };
+  fetch(SUPA_URL+'/rest/v1/franchise_brands?brand_name=eq.'+encodeURIComponent(_cur.brand_name),{
+    method:'PATCH', headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify(payload)
+  }).then(function(r){
+    btn.disabled=false; btn.textContent='저장하기';
+    if(r.ok){ toast('저장됐어요! 상세페이지에 반영됩니다'); }
+    else{ toast('저장 실패'); }
+  }).catch(function(){ btn.disabled=false; btn.textContent='저장하기'; toast('저장 실패'); });
+}
+
+init();
+</script>
+</body></html>
