@@ -1,0 +1,190 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#f4f6fb">
+<title>브랜드 상세 · 모아</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Pretendard',sans-serif;-webkit-font-smoothing:antialiased;}
+html,body{height:100%;}
+body{background:#f4f6fb;display:flex;justify-content:center;}
+.phone{width:100%;max-width:430px;background:#f4f6fb;overflow:hidden;position:relative;height:100vh;height:100dvh;}
+.scroll{height:100vh;height:100dvh;overflow-y:auto;padding-bottom:88px;-webkit-overflow-scrolling:touch;}
+.scroll::-webkit-scrollbar{display:none;}
+svg{display:block;}
+@media (min-width:600px){
+  body{background:#dde1e8;padding:20px;align-items:center;}
+  .phone{max-width:390px;height:844px;border-radius:36px;box-shadow:0 20px 50px rgba(0,0,0,.2);}
+  .scroll{height:844px;}
+}
+/* 상단바 */
+.topbar{position:sticky;top:0;z-index:20;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:rgba(244,246,251,.92);backdrop-filter:blur(8px);}
+.tb-btn{width:38px;height:38px;border-radius:50%;background:#fff;border:none;display:flex;align-items:center;justify-content:center;color:#4e5968;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+/* 히어로 */
+.hero{margin:0 16px;border-radius:22px;overflow:hidden;position:relative;height:200px;background:linear-gradient(135deg,#4d94ff,#3182f6);display:flex;align-items:flex-end;}
+.hero-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);font-size:13px;font-weight:600;}
+.hero-badge{position:absolute;top:14px;left:14px;background:rgba(0,0,0,.35);color:#fff;font-size:11px;font-weight:700;padding:5px 11px;border-radius:20px;}
+.brand-head{padding:16px;}
+.bh-name{font-size:22px;font-weight:800;color:#191f28;letter-spacing:-.02em;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.bh-match{font-size:13px;font-weight:800;color:#3182f6;background:#eef5ff;padding:3px 9px;border-radius:8px;}
+.bh-sub{font-size:13.5px;color:#8b95a1;margin-top:5px;font-weight:600;}
+/* 섹션 공통 */
+.sec{background:#fff;margin:12px 16px;border-radius:18px;padding:18px;box-shadow:0 2px 10px rgba(60,80,140,.04);}
+.sec-t{font-size:15px;font-weight:800;color:#191f28;margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+.src-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;margin-left:auto;}
+.src-ftc{background:#eef5ff;color:#3182f6;}
+.src-hq{background:#e9fbf0;color:#0ca678;}
+/* 핵심지표 그리드 */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.kpi{background:#f8fafc;border-radius:12px;padding:13px;}
+.kpi-l{font-size:11.5px;color:#8b95a1;font-weight:600;margin-bottom:5px;}
+.kpi-v{font-size:18px;font-weight:800;color:#191f28;letter-spacing:-.02em;}
+.kpi-v.invest{color:#e8590c;}
+.ftc-note{margin-top:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.base-yr{font-size:10.5px;color:#3182f6;font-weight:700;background:#eef5ff;padding:3px 8px;border-radius:6px;}
+.ftc-link{font-size:11.5px;color:#868e96;font-weight:600;text-decoration:none;}
+/* 창업비용 상세 */
+.cost-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #f1f3f5;font-size:13.5px;}
+.cost-row:last-child{border-bottom:none;}
+.cost-row .cl{color:#4e5968;}
+.cost-row .cv{font-weight:700;color:#191f28;}
+.cost-total{display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding-top:13px;border-top:2px solid #f1f3f5;}
+.cost-total .cl{font-size:14px;font-weight:800;color:#191f28;}
+.cost-total .cv{font-size:19px;font-weight:800;color:#e8590c;}
+.cost-hint{font-size:11px;color:#adb5bd;margin-top:10px;line-height:1.5;}
+/* 담당자 미등록 placeholder */
+.hq-empty{text-align:center;padding:28px 16px;color:#adb5bd;}
+.hq-empty svg{margin:0 auto 10px;opacity:.5;}
+.hq-empty .t{font-size:13.5px;font-weight:600;color:#868e96;}
+.hq-empty .s{font-size:12px;margin-top:5px;line-height:1.5;}
+/* 하단 고정 CTA */
+.cta-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid #eef1f5;padding:12px 16px;display:flex;gap:10px;z-index:30;}
+@media (min-width:600px){.cta-bar{max-width:390px;bottom:20px;border-radius:0 0 36px 36px;}}
+.cta-fav{width:52px;flex-shrink:0;background:#f4f6fb;border:none;border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#8b95a1;}
+.cta-apply{flex:1;background:#3182f6;color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:800;padding:15px;cursor:pointer;font-family:inherit;}
+.loading{text-align:center;padding:60px 0;color:#adb5bd;font-size:14px;}
+</style></head>
+<body>
+<div class="phone">
+<div class="scroll" id="scroll">
+  <div class="topbar">
+    <button class="tb-btn" onclick="history.back()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <button class="tb-btn" onclick="shareBrand()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+    </button>
+  </div>
+  <div id="body"><div class="loading">브랜드 정보를 불러오는 중…</div></div>
+</div>
+<div class="cta-bar">
+  <button class="cta-fav" onclick="toggleFav()" id="favBtn">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1.1 1L12 21l7.7-7.6 1.1-1a5.5 5.5 0 000-7.8z"/></svg>
+  </button>
+  <button class="cta-apply" onclick="applyConsult()">상담 신청</button>
+</div>
+</div>
+<script>
+var SUPA_URL='https://wxecxkckbpgzcdegtahy.supabase.co';
+var SUPA_KEY='sb_publishable_IVu4Fuyb8pKl5-ZkuYqoKA_iHKTwgpq';
+var _brand=null;
+
+function qs(k){ return new URLSearchParams(location.search).get(k)||''; }
+function fmtMonthly(won){ if(!won) return '-'; return Math.round(won/12/10000).toLocaleString()+'만'; }
+function fmtInvest(won){ if(!won) return '-'; var m=Math.round(won/10000); if(m>=10000){var e=m/10000;return (e%1===0?e:e.toFixed(1))+'억';} return m.toLocaleString()+'만'; }
+function fmtArea(cheon){ if(!cheon||cheon<=0) return null; return Math.round(cheon/10).toLocaleString()+'만'; }
+function esc(s){ return (s||'').replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];}); }
+function cleanName(nm){ return (nm||'').replace(/\([^)]*\)/g,'').replace(/[&·].*$/,'').trim(); }
+function ftcUrl(nm){ return 'https://franchise.ftc.go.kr/mnu/00013/program/userRqst/list.do?column=brd&searchKeyword='+encodeURIComponent(cleanName(nm))+'&selUpjong=&selIndus=&pageUnit=10'; }
+
+function load(){
+  var bn=qs('b'), cn=qs('c');
+  var url=SUPA_URL+'/rest/v1/franchise_brands?brand_name=eq.'+encodeURIComponent(bn)+'&select=*&limit=1';
+  fetch(url,{headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY}})
+    .then(function(r){return r.json();})
+    .then(function(rows){
+      if(!rows||!rows.length){ document.getElementById('body').innerHTML='<div class="loading">브랜드 정보를 찾을 수 없어요</div>'; return; }
+      _brand=rows[0];
+      render(_brand);
+    })
+    .catch(function(e){ document.getElementById('body').innerHTML='<div class="loading">불러오기 실패</div>'; });
+}
+
+function render(b){
+  var nm=cleanName(b.brand_name);
+  var initial=nm.charAt(0);
+  var area=fmtArea(b.area_unit_sales);
+  var y=b.base_year||'';
+  var html='';
+
+  // [1] 히어로 (담당자 이미지 자리)
+  html+='<div class="hero"><div class="hero-ph">'+esc(nm)+'</div>'+
+    (b.hq_managed?'':'<div class="hero-badge">대표 이미지 준비중</div>')+'</div>';
+  html+='<div class="brand-head">'+
+    '<div class="bh-name">'+esc(nm)+'</div>'+
+    '<div class="bh-sub">'+esc(b.industry||'')+' · 가맹점 '+(b.store_count?b.store_count.toLocaleString():'-')+'개</div>'+
+    '</div>';
+
+  // [2] 핵심 지표 (공정위)
+  html+='<div class="sec"><div class="sec-t">핵심 지표<span class="src-tag src-ftc">공정위 공식</span></div>'+
+    '<div class="kpi-grid">'+
+      '<div class="kpi"><div class="kpi-l">월평균 매출</div><div class="kpi-v">'+fmtMonthly(b.avg_sales)+'</div></div>'+
+      '<div class="kpi"><div class="kpi-l">가맹점 수</div><div class="kpi-v">'+(b.store_count?b.store_count.toLocaleString():'-')+'개</div></div>'+
+      (area?'<div class="kpi"><div class="kpi-l">평당 월매출</div><div class="kpi-v">'+area+'</div></div>':'')+
+      '<div class="kpi"><div class="kpi-l">실투자금</div><div class="kpi-v invest">'+fmtInvest(b.startup_cost_min)+'</div></div>'+
+    '</div>'+
+    '<div class="ftc-note">'+
+      (y?'<span class="base-yr">'+y+'년 공정위 기준</span>':'')+
+      '<a class="ftc-link" href="'+ftcUrl(b.brand_name)+'" target="_blank" rel="noopener">폐업률·상세는 공정위 원본에서 확인 ↗</a>'+
+    '</div></div>';
+
+  // [3] 창업비용 상세 (공정위) — 세부항목은 담당자 등록 시 채워짐, 지금은 합계만
+  html+='<div class="sec"><div class="sec-t">창업 비용<span class="src-tag src-ftc">공정위 공식</span></div>';
+  if(b.startup_cost_min){
+    html+='<div class="cost-hint" style="margin-top:0;margin-bottom:8px;">가맹금·교육비·보증금·기타비용을 포함한 실투자금입니다. (점포 임대·별도공사 제외)</div>'+
+      '<div class="cost-total"><span class="cl">실투자금 합계</span><span class="cv">'+fmtInvest(b.startup_cost_min)+'</span></div>'+
+      '<div class="cost-hint">항목별 상세 내역은 공정위 정보공개서 원본에서 확인하실 수 있습니다.</div>';
+  }else{
+    html+='<div class="hq-empty"><div class="t">창업 비용 정보 준비중</div></div>';
+  }
+  html+='</div>';
+
+  // [4] 대표 메뉴 (담당자)
+  html+='<div class="sec"><div class="sec-t">대표 메뉴<span class="src-tag src-hq">브랜드 제공</span></div>'+
+    hqPlaceholder('메뉴 사진과 가격은 브랜드 담당자 등록 후 표시됩니다')+'</div>';
+
+  // [5] 인테리어·홍보영상 (담당자)
+  html+='<div class="sec"><div class="sec-t">인테리어 · 홍보영상<span class="src-tag src-hq">브랜드 제공</span></div>'+
+    hqPlaceholder('매장 사진과 홍보 영상은 브랜드 담당자 등록 후 표시됩니다')+'</div>';
+
+  // [6] 본사 지원 (담당자)
+  html+='<div class="sec"><div class="sec-t">본사 지원<span class="src-tag src-hq">브랜드 제공</span></div>'+
+    (b.hq_intro?'<div style="font-size:13.5px;color:#4e5968;line-height:1.7;white-space:pre-wrap;">'+esc(b.hq_intro)+'</div>':hqPlaceholder('상권분석·교육·마케팅 등 본사 지원 내용은 담당자 등록 후 표시됩니다'))+'</div>';
+
+  // [7] 브랜드 비전 (담당자)
+  if(b.hq_vision){
+    html+='<div class="sec"><div class="sec-t">브랜드 비전<span class="src-tag src-hq">브랜드 제공</span></div>'+
+      '<div style="font-size:13.5px;color:#4e5968;line-height:1.7;white-space:pre-wrap;">'+esc(b.hq_vision)+'</div></div>';
+  }
+
+  // 출처 면책
+  html+='<div style="margin:16px;font-size:11px;color:#adb5bd;line-height:1.6;">'+
+    '매출·가맹점수·창업비용은 공정거래위원회 가맹사업정보('+(y||'')+'년 기준)에서 제공된 공식 자료입니다. '+
+    '\'브랜드 제공\' 표시 항목은 브랜드 담당자가 직접 등록한 정보로, 실제와 차이가 있을 수 있습니다. '+
+    '계약 전 반드시 정보공개서 원본과 본사 상담을 통해 확인하세요.</div>';
+
+  document.getElementById('body').innerHTML=html;
+}
+
+function hqPlaceholder(msg){
+  return '<div class="hq-empty">'+
+    '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>'+
+    '<div class="t">'+msg+'</div></div>';
+}
+
+function shareBrand(){ if(navigator.share&&_brand){ navigator.share({title:cleanName(_brand.brand_name)+' · 모아',url:location.href}); } }
+function toggleFav(){ var b=document.getElementById('favBtn'); var on=b.style.color==='rgb(240, 62, 62)'; b.style.color=on?'':'#f03e3e'; b.querySelector('path').setAttribute('fill',on?'none':'#f03e3e'); }
+function applyConsult(){ alert('상담 신청 기능은 준비중입니다.\n(로그인 + 진성 인증 후 영업담당자 연결 예정)'); }
+
+load();
+</script>
+</body></html>
